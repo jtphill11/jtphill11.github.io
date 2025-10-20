@@ -7,7 +7,7 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/foundation/6.4.3/css/foundation.min.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/motion-ui/1.2.3/motion-ui.min.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/foundation/6.4.3/css/foundation-prototype.min.css">
-  <link href="https://cdnjs.cloudflare.com/ajax/libs/foundicons/3.0.0/foundation-icons.css" rel="stylesheet" type="text/css">
+  <link href='https://cdnjs.cloudflare.com/ajax/libs/foundicons/3.0.0/foundation-icons.css' rel='stylesheet' type='text/css'>
 </head>
 <body>
   <!-- Sidebar -->
@@ -18,8 +18,9 @@
         <img class="thumbnail" src="assets/bullride_logo.png">
       </div>
       <div class="cell auto">
-        <button id="signIn" class="button expanded">Log In / Sign Up</button>
-        <p>Log in to view, buy, sell, and create your very own ETF baskets, or create an account for free today!</p>
+        <button id="signIn" class="button expanded">Log In</button>
+        <button id="signOut" class="button expanded">Sign Out</button>
+        <p>Log in to view, buy, sell, and create your ETFs, or create an account for free!</p>
       </div>
     </div>
   </div>
@@ -35,91 +36,49 @@
 
     <div class="callout primary">
       <article class="grid-container">
-        <div>
-          <h1>Welcome to Bullride, The Spotify of Wall Street.</h1>
-          <p class="lead">Introducing a revolutionary way to invest. Create your own ETFs with AI-generated baskets. Currently in development.</p>
-        </div>
+        <h1>Welcome to Bullride, The Spotify of Wall Street.</h1>
+        <p class="lead">Create your own ETFs and explore new ways to invest. Early access users get full control over their dashboard.</p>
       </article>
     </div>
 
+    <!-- User info display -->
     <article class="grid-container">
-      <div class="grid-x grid-margin-x small-up-2 medium-up-3 large-up-4">
-        <div class="cell">
-          <img class="thumbnail" src="assets/etf_icon.png">
-          <h5>Create ETFs</h5>
-        </div>
-        <div class="cell">
-          <img class="thumbnail" src="assets/etf_icon.png">
-          <h5>Share ETFs</h5>
-        </div>
-        <div class="cell">
-          <img class="thumbnail" src="assets/etf_icon.png">
-          <h5>New ETFs</h5>
-        </div>
-        <div class="cell">
-          <img class="thumbnail" src="assets/etf_icon.png">
-          <h5>Trending ETFs</h5>
-        </div>
-        <div class="cell">
-          <img class="thumbnail" src="assets/etf_icon.png">
-          <h5>Search ETFs</h5>
-        </div>
-        <div class="cell">
-          <img class="thumbnail" src="assets/etf_icon.png">
-          <h5>r/wallstreetbets ETFs</h5>
-        </div>
-        <div class="cell">
-          <img class="thumbnail" src="assets/etf_icon.png">
-          <h5>Politician ETFs</h5>
-        </div>
-        <div class="cell">
-          <img class="thumbnail" src="assets/etf_icon.png">
-          <h5>Rising ETFs</h5>
-        </div>
-      </div>
-
-      <hr>
-
-      <div class="grid-x grid-margin-x">
-        <div class="medium-6 cell">
-          <h3>I'm Interested in Early Access</h3>
-          <p>Subscribe to our newsletter for updates about Bullride development. Unsubscribe at any time.</p>
-          <ul class="menu">
-            <li><a href="#">X</a></li>
-            <li><a href="#">Youtube</a></li>
-            <li><a href="#">LinkedIn</a></li>
-          </ul>
-        </div>
-        <div class="medium-6 cell">
-          <label>Name
-            <input type="text" placeholder="Name">
-          </label>
-          <label>Email
-            <input type="text" placeholder="Email">
-          </label>
-          <label>
-            Message
-            <textarea placeholder="I'm interested in..."></textarea>
-          </label>
-          <input type="submit" class="button expanded" value="Submit">
-        </div>
-      </div>
+      <h3>Logged in User Info</h3>
+      <p>Email: <pre id="email">Not signed in</pre></p>
+      <p>Access Token: <pre id="access-token"></pre></p>
+      <p>ID Token: <pre id="id-token"></pre></p>
+      <p>Refresh Token: <pre id="refresh-token"></pre></p>
     </article>
   </div>
 
   <script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/foundation/6.4.3/js/foundation.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/motion-ui/1.2.3/motion-ui.min.js"></script>
-  <script>
-    $(document).foundation();
-  </script>
-
-  <!-- Cognito login integration -->
   <script type="module">
-    import { userManager } from './main.js';
+    import { userManager, signOutRedirect } from './main.js';
 
+    $(document).foundation();
+
+    // Sign in button
     document.getElementById('signIn').addEventListener('click', async () => {
-      await userManager.signinRedirect(); // triggers Cognito login
+      await userManager.signinRedirect();
+    });
+
+    // Sign out button
+    document.getElementById('signOut').addEventListener('click', async () => {
+      await signOutRedirect();
+    });
+
+    // Handle redirect callback automatically if redirected from Cognito
+    userManager.signinRedirectCallback().then(user => {
+      if (user) {
+        document.getElementById('email').textContent = user.profile?.email || "No email";
+        document.getElementById('access-token').textContent = user.access_token;
+        document.getElementById('id-token').textContent = user.id_token;
+        document.getElementById('refresh-token').textContent = user.refresh_token;
+      }
+    }).catch(err => {
+      console.error('Error handling sign-in callback:', err);
     });
   </script>
 </body>
