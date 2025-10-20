@@ -1,10 +1,10 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Bullride Dashboard</title>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/foundation/6.4.3/css/foundation.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/foundation/6.4.3/css/foundation.min.css" />
 </head>
 <body>
   <div class="grid-container">
@@ -34,18 +34,37 @@
   <script type="module">
     import { userManager, signOutRedirect } from './main.js';
 
-    // Handle redirect callback after login
-    userManager.signinCallback().then(user => {
-      document.getElementById('email').textContent = user.profile?.email ?? 'N/A';
-      document.getElementById('access-token').textContent = user.access_token ?? 'N/A';
-      document.getElementById('id-token').textContent = user.id_token ?? 'N/A';
-      document.getElementById('refresh-token').textContent = user.refresh_token ?? 'N/A';
-    }).catch(err => {
-      console.error('Error during signin callback:', err);
-      document.getElementById('email').textContent = 'Login failed';
-    });
+    async function displayUser(user) {
+      document.getElementById('email').textContent = user?.profile?.email ?? 'N/A';
+      document.getElementById('access-token').textContent = user?.access_token ?? 'N/A';
+      document.getElementById('id-token').textContent = user?.id_token ?? 'N/A';
+      document.getElementById('refresh-token').textContent = user?.refresh_token ?? 'N/A';
+    }
 
-    // Sign out
+    async function loadUser() {
+      try {
+        // Try to load existing user session first
+        let user = await userManager.getUser();
+
+        if (!user) {
+          // If no session, handle redirect callback (first login)
+          user = await userManager.signinCallback();
+        }
+
+        if (user) {
+          await displayUser(user);
+        } else {
+          document.getElementById('email').textContent = 'No user session found.';
+        }
+      } catch (err) {
+        console.error('Error during signin or callback:', err);
+        document.getElementById('email').textContent = 'Login failed. Check console for details.';
+      }
+    }
+
+    loadUser();
+
+    // Sign out handler
     document.getElementById('signOut').addEventListener('click', async () => {
       await signOutRedirect();
     });

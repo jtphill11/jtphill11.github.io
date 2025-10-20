@@ -7,20 +7,21 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/foundation/6.4.3/css/foundation.min.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/motion-ui/1.2.3/motion-ui.min.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/foundation/6.4.3/css/foundation-prototype.min.css">
-  <link href='https://cdnjs.cloudflare.com/ajax/libs/foundicons/3.0.0/foundation-icons.css' rel='stylesheet' type='text/css'>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/foundicons/3.0.0/foundation-icons.css" rel="stylesheet" type="text/css">
 </head>
 <body>
-  <!-- Sidebar -->
+
+  <!-- Sidebar / Menu -->
   <div class="off-canvas position-left reveal-for-large" id="my-info" data-off-canvas>
     <div class="grid-y grid-padding-x" style="height: 100%;">
       <br>
       <div class="cell shrink">
-        <img class="thumbnail" src="assets/bullride_logo.png">
+        <img class="thumbnail" src="assets/bullride_logo.png" alt="Bullride Logo">
       </div>
       <div class="cell auto">
-        <button id="signIn" class="button expanded">Log In</button>
-        <button id="signOut" class="button expanded">Sign Out</button>
-        <p>Log in to view, buy, sell, and create your ETFs, or create an account for free!</p>
+        <input type="button" class="button expanded" value="Log In" id="signIn">
+        <input type="button" class="button expanded" value="Sign Up" id="signUp">
+        <p>Log in to view, buy, sell, and create your very own ETF baskets, or create an account for free today!</p>
       </div>
     </div>
   </div>
@@ -37,49 +38,43 @@
     <div class="callout primary">
       <article class="grid-container">
         <h1>Welcome to Bullride, The Spotify of Wall Street.</h1>
-        <p class="lead">Create your own ETFs and explore new ways to invest. Early access users get full control over their dashboard.</p>
+        <p class="lead">Introducing a new, revolutionary way to invest in the market. Create your very own ETFs with a pick-and-choose method of your favorite stocks. Utilize our AI feature to generate custom ETF baskets that Wall Street has never seen before. This project is currently in development.</p>
       </article>
     </div>
 
-    <!-- User info display -->
     <article class="grid-container">
-      <h3>Logged in User Info</h3>
-      <p>Email: <pre id="email">Not signed in</pre></p>
-      <p>Access Token: <pre id="access-token"></pre></p>
-      <p>ID Token: <pre id="id-token"></pre></p>
-      <p>Refresh Token: <pre id="refresh-token"></pre></p>
+      <div class="grid-x grid-margin-x small-up-2 medium-up-3 large-up-4">
+        <div class="cell"><img class="thumbnail" src="assets/etf_icon.png"><h5>Create ETFs</h5></div>
+        <div class="cell"><img class="thumbnail" src="assets/etf_icon.png"><h5>Share ETFs</h5></div>
+        <div class="cell"><img class="thumbnail" src="assets/etf_icon.png"><h5>New ETFs</h5></div>
+        <div class="cell"><img class="thumbnail" src="assets/etf_icon.png"><h5>Trending ETFs</h5></div>
+        <div class="cell"><img class="thumbnail" src="assets/etf_icon.png"><h5>Search ETFs</h5></div>
+        <div class="cell"><img class="thumbnail" src="assets/etf_icon.png"><h5>r/wallstreetbets ETFs</h5></div>
+        <div class="cell"><img class="thumbnail" src="assets/etf_icon.png"><h5>Politician ETFs</h5></div>
+        <div class="cell"><img class="thumbnail" src="assets/etf_icon.png"><h5>Rising ETFs</h5></div>
+      </div>
     </article>
   </div>
 
+  <!-- Scripts -->
   <script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/foundation/6.4.3/js/foundation.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/motion-ui/1.2.3/motion-ui.min.js"></script>
   <script type="module">
-    import { userManager, signOutRedirect } from './main.js';
+    import { userManager } from './main.js';
 
-    $(document).foundation();
-
-    // Sign in button
+    // Log In
     document.getElementById('signIn').addEventListener('click', async () => {
       await userManager.signinRedirect();
     });
 
-    // Sign out button
-    document.getElementById('signOut').addEventListener('click', async () => {
-      await signOutRedirect();
+    // Sign Up
+    document.getElementById('signUp').addEventListener('click', async () => {
+      await userManager.signinRedirect({ extraQueryParams: { screen_hint: 'signup' } });
     });
-
-    // Handle redirect callback automatically if redirected from Cognito
-    userManager.signinRedirectCallback().then(user => {
-      if (user) {
-        document.getElementById('email').textContent = user.profile?.email || "No email";
-        document.getElementById('access-token').textContent = user.access_token;
-        document.getElementById('id-token').textContent = user.id_token;
-        document.getElementById('refresh-token').textContent = user.refresh_token;
-      }
-    }).catch(err => {
-      console.error('Error handling sign-in callback:', err);
-    });
+  </script>
+  <script>
+    $(document).foundation();
   </script>
 </body>
 </html>
