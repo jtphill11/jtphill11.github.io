@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bullride Dashboard</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/foundation/6.4.3/css/foundation.min.css">
+</head>
+<body>
+  <div class="grid-container">
+    <h1>Welcome to Your Dashboard</h1>
+    <p>Below are your Cognito authentication details:</p>
+
+    <div>
+      <h3>Email</h3>
+      <pre id="email">Loading...</pre>
+    </div>
+    <div>
+      <h3>Access Token</h3>
+      <pre id="access-token">Loading...</pre>
+    </div>
+    <div>
+      <h3>ID Token</h3>
+      <pre id="id-token">Loading...</pre>
+    </div>
+    <div>
+      <h3>Refresh Token</h3>
+      <pre id="refresh-token">Loading...</pre>
+    </div>
+
+    <button class="button alert" id="signOut">Log Out</button>
+  </div>
+
+  <script type="module">
+    import { userManager, signOutRedirect } from './main.js';
+
+    // Handle redirect callback after login
+    userManager.signinCallback().then(user => {
+      document.getElementById('email').textContent = user.profile?.email ?? 'N/A';
+      document.getElementById('access-token').textContent = user.access_token ?? 'N/A';
+      document.getElementById('id-token').textContent = user.id_token ?? 'N/A';
+      document.getElementById('refresh-token').textContent = user.refresh_token ?? 'N/A';
+    }).catch(err => {
+      console.error('Error during signin callback:', err);
+      document.getElementById('email').textContent = 'Login failed';
+    });
+
+    // Sign out
+    document.getElementById('signOut').addEventListener('click', async () => {
+      await signOutRedirect();
+    });
+  </script>
+</body>
+</html>
