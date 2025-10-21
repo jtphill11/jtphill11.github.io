@@ -1,3 +1,5 @@
+
+
 <!doctype html>
 <html class="no-js" lang="en">
   <head>
@@ -131,7 +133,7 @@
       import { UserManager } from "https://cdn.jsdelivr.net/npm/oidc-client-ts@2.2.3/+esm";
 
       const userManager = new UserManager({
-        authority: "https://auth.bullride.us/oauth2",
+        authority: "https://auth.bullride.us",
         client_id: "2l15ru0njbo72tv2skuceokjf2",
         redirect_uri: "https://bullride.us",
         response_type: "code",
@@ -140,14 +142,14 @@
 
       console.log("Bullride OIDC initialized");
 
-      document.getElementById("signIn").addEventListener("click", () => {
-        console.log("Redirecting to Cognito sign-in...");
-        userManager.signinRedirect().catch(err => console.error(err));
+      document.getElementById("signIn").addEventListener("click", async () => {
+        console.log("Redirecting to Cognito sign-in... Updated");
+        await userManager.signinRedirect();
       });
 
-      document.getElementById("signUp").addEventListener("click", () => {
+      document.getElementById("signUp").addEventListener("click", async () => {
         console.log("Redirecting to Cognito sign-up...");
-        userManager.signinRedirect({ screen_hint: "signup" }).catch(err => console.error(err));
+        await userManager.signinRedirect({ screen_hint: "signup" });
       });
     </script>
 
@@ -174,9 +176,9 @@
           });
 
           const result = await response.json();
-          alert(result.message);
+          alert(result.message); // Show success message
 
-          form.reset();
+          form.reset(); // Clear form fields
         } catch (error) {
           console.error('Error submitting form:', error);
           alert('There was an error submitting your message.');
