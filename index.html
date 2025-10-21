@@ -105,12 +105,6 @@
       opacity: 1;
     }
 
-    .cell img {
-      width: 80px;
-      margin-bottom: 1rem;
-      filter: brightness(10);
-    }
-
     h5 {
       font-weight: 500;
       letter-spacing: 0.5px;
@@ -193,6 +187,55 @@
       to { transform: translateX(0); opacity: 1; }
     }
 
+    /* ====== Animated Square Effect ====== */
+    .square {
+      position: relative;
+      width: 80px;
+      height: 80px;
+      background: #fff;
+      margin: 0 auto 1rem;
+      transform-origin: center;
+      animation: rotateSquare 10s linear infinite;
+      cursor: pointer;
+      transition: transform 0.4s ease, box-shadow 0.4s ease;
+      border-radius: 4px;
+    }
+
+    @keyframes rotateSquare {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+
+    .square:hover {
+      animation-play-state: paused;
+      box-shadow: 0 0 20px rgba(255,255,255,0.6);
+    }
+
+    .square.split {
+      background: none;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      grid-template-rows: repeat(3, 1fr);
+      gap: 4px;
+      animation-play-state: paused;
+    }
+
+    .square.split div {
+      background: #fff;
+      border-radius: 2px;
+      transition: transform 0.3s ease, opacity 0.3s ease;
+    }
+
+    .square.split div:hover {
+      transform: scale(1.2);
+      opacity: 0.8;
+    }
+
+    .square.clicked {
+      transform: scale(0.9);
+      box-shadow: 0 0 30px rgba(255,255,255,0.8);
+    }
+
     @media (max-width: 768px) {
       .sidebar { display: none; }
       main { margin: 0; padding: 2rem; }
@@ -213,12 +256,30 @@
     <p class="lead">The Spotify of Wall Street. Create your own ETFs, share them, or use AI-generated baskets — a revolutionary way to invest in the market.</p>
 
     <section class="grid">
-      <div class="cell"><img src="assets/etf_icon.png" alt=""><h5>Create ETFs</h5></div>
-      <div class="cell"><img src="assets/etf_icon.png" alt=""><h5>Share ETFs</h5></div>
-      <div class="cell"><img src="assets/etf_icon.png" alt=""><h5>Trending ETFs</h5></div>
-      <div class="cell"><img src="assets/etf_icon.png" alt=""><h5>Rising ETFs</h5></div>
-      <div class="cell"><img src="assets/etf_icon.png" alt=""><h5>Politician ETFs</h5></div>
-      <div class="cell"><img src="assets/etf_icon.png" alt=""><h5>r/wallstreetbets ETFs</h5></div>
+      <div class="cell">
+        <div class="square"></div>
+        <h5>Create ETFs</h5>
+      </div>
+      <div class="cell">
+        <div class="square"></div>
+        <h5>Share ETFs</h5>
+      </div>
+      <div class="cell">
+        <div class="square"></div>
+        <h5>Trending ETFs</h5>
+      </div>
+      <div class="cell">
+        <div class="square"></div>
+        <h5>Rising ETFs</h5>
+      </div>
+      <div class="cell">
+        <div class="square"></div>
+        <h5>Politician ETFs</h5>
+      </div>
+      <div class="cell">
+        <div class="square"></div>
+        <h5>r/wallstreetbets ETFs</h5>
+      </div>
     </section>
 
     <section class="contact">
@@ -282,6 +343,28 @@
       } catch {
         alert('There was an error submitting your message.');
       }
+    });
+
+    // ===== Animated Squares =====
+    document.querySelectorAll('.square').forEach(square => {
+      // Create 9 inner divs for the split animation
+      const smallSquares = Array.from({ length: 9 }, () => document.createElement('div'));
+      smallSquares.forEach(div => square.appendChild(div));
+
+      // Hover effect
+      square.addEventListener('mouseenter', () => {
+        square.classList.add('split');
+      });
+
+      square.addEventListener('mouseleave', () => {
+        square.classList.remove('split');
+      });
+
+      // Click animation pulse
+      square.addEventListener('click', () => {
+        square.classList.add('clicked');
+        setTimeout(() => square.classList.remove('clicked'), 300);
+      });
     });
   </script>
 </body>
