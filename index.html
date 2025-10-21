@@ -1,3 +1,5 @@
+
+
 <!doctype html>
 <html class="no-js" lang="en">
   <head>
@@ -10,23 +12,6 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/motion-ui/1.2.3/motion-ui.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/foundation/6.4.3/css/foundation-prototype.min.css">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/foundicons/3.0.0/foundation-icons.css" rel="stylesheet" type="text/css">
-
-    <!-- Amplify -->
-    <script src="https://unpkg.com/aws-amplify@5.0.7/dist/aws-amplify.min.js"></script>
-
-    <style>
-      /* Optional: style the custom login form */
-      #customLogin {
-        margin-top: 20px;
-      }
-      #customLogin input {
-        margin-bottom: 10px;
-      }
-      #loginError {
-        color: red;
-        margin-top: 5px;
-      }
-    </style>
   </head>
 
   <body>
@@ -38,37 +23,9 @@
           <img class="thumbnail" src="assets/bullride_logo.png" alt="Bullride Logo">
         </div>
         <div class="cell auto">
-          <input type="button" class="button expanded" id="showSignIn" value="Log In">
-          <input type="button" class="button expanded" id="showSignUp" value="Sign Up">
+          <input type="button" class="button expanded" id="signIn" value="Log In">
+          <input type="button" class="button expanded" id="signUp" value="Sign Up">
           <p>Log in to view, buy, sell, and create your very own ETF baskets, or create an account for free today!</p>
-
-          <!-- Custom Login / Sign-up Forms -->
-          <div id="customLogin" style="display:none;">
-            <form id="loginForm">
-              <label>Email
-                <input type="text" id="email" placeholder="Enter your email" required>
-              </label>
-              <label>Password
-                <input type="password" id="password" placeholder="Enter your password" required>
-              </label>
-              <button type="submit" class="button expanded">Log In</button>
-              <p id="loginError"></p>
-            </form>
-          </div>
-
-          <div id="customSignUp" style="display:none;">
-            <form id="signUpForm">
-              <label>Email
-                <input type="text" id="signUpEmail" placeholder="Enter your email" required>
-              </label>
-              <label>Password
-                <input type="password" id="signUpPassword" placeholder="Enter your password" required>
-              </label>
-              <button type="submit" class="button expanded">Sign Up</button>
-              <p id="signUpError"></p>
-            </form>
-          </div>
-
         </div>
       </div>
     </div>
@@ -95,7 +52,74 @@
       </div>
 
       <article class="grid-container">
-        <!-- ETF icons & early access section omitted for brevity -->
+        <div class="grid-x grid-margin-x small-up-2 medium-up-3 large-up-4">
+          <div class="cell">
+            <img class="thumbnail" src="assets/etf_icon.png" alt="Create ETFs">
+            <h5>Create ETFs</h5>
+          </div>
+          <div class="cell">
+            <img class="thumbnail" src="assets/etf_icon.png" alt="Share ETFs">
+            <h5>Share ETFs</h5>
+          </div>
+          <div class="cell">
+            <img class="thumbnail" src="assets/etf_icon.png" alt="New ETFs">
+            <h5>New ETFs</h5>
+          </div>
+          <div class="cell">
+            <img class="thumbnail" src="assets/etf_icon.png" alt="Trending ETFs">
+            <h5>Trending ETFs</h5>
+          </div>
+          <div class="cell">
+            <img class="thumbnail" src="assets/etf_icon.png" alt="Search ETFs">
+            <h5>Search ETFs</h5>
+          </div>
+          <div class="cell">
+            <img class="thumbnail" src="assets/etf_icon.png" alt="r/wallstreetbets ETFs">
+            <h5>r/wallstreetbets ETFs</h5>
+          </div>
+          <div class="cell">
+            <img class="thumbnail" src="assets/etf_icon.png" alt="Politician ETFs">
+            <h5>Politician ETFs</h5>
+          </div>
+          <div class="cell">
+            <img class="thumbnail" src="assets/etf_icon.png" alt="Rising ETFs">
+            <h5>Rising ETFs</h5>
+          </div>
+        </div>
+
+        <hr>
+
+        <div class="grid-x grid-margin-x">
+          <div class="medium-6 cell">
+            <h3>I'm Interested in Early Access</h3>
+            <p>
+              Register here to subscribe to our newsletter with updates regarding Bullride. 
+              Unsubscribe anytime. Become an early access user or contribute to development!
+            </p>
+            <ul class="menu">
+              <li><a href="#">X</a></li>
+              <li><a href="#">YouTube</a></li>
+              <li><a href="#">LinkedIn</a></li>
+            </ul>
+          </div>
+
+          <div class="medium-6 cell">
+            <!-- Contact Form -->
+            <form id="contactForm">
+              <label>Name
+                <input type="text" name="name" placeholder="Name" required>
+              </label>
+              <label>Email
+                <input type="email" name="email" placeholder="Email" required>
+              </label>
+              <label>
+                Message
+                <textarea name="message" placeholder="I'm interested in..." required></textarea>
+              </label>
+              <input type="submit" class="button expanded" value="Submit">
+            </form>
+          </div>
+        </div>
       </article>
     </div>
 
@@ -104,74 +128,60 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/foundation/6.4.3/js/foundation.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/motion-ui/1.2.3/motion-ui.min.js"></script>
 
-    <!-- Amplify Cognito Integration -->
+    <!-- Cognito Login Script -->
+    <script type="module">
+      import { UserManager } from "https://cdn.jsdelivr.net/npm/oidc-client-ts@2.2.3/+esm";
+
+      const userManager = new UserManager({
+        authority: "https://cognito-idp.us-east-1.amazonaws.com/us-east-1_HPx82G5s7",
+        client_id: "2l15ru0njbo72tv2skuceokjf2",
+        redirect_uri: "https://bullride.us",
+        response_type: "code",
+        scope: "openid email phone"
+      });
+
+      console.log("Bullride OIDC initialized");
+
+      document.getElementById("signIn").addEventListener("click", async () => {
+        console.log("Redirecting to Cognito sign-in... Updated");
+        await userManager.signinRedirect();
+      });
+
+      document.getElementById("signUp").addEventListener("click", async () => {
+        console.log("Redirecting to Cognito sign-up...");
+        await userManager.signinRedirect({ screen_hint: "signup" });
+      });
+    </script>
+
+    <!-- Contact Form JS -->
     <script>
-      const { Amplify, Auth } = window.aws_amplify;
+      const backendURL = 'https://backend.bullride.us';
 
-      Amplify.configure({
-        Auth: {
-          region: 'us-east-1',
-          userPoolId: 'us-east-1_HPx82G5s7',
-          userPoolWebClientId: '2l15ru0njbo72tv2skuceokjf2',
-          authenticationFlowType: 'USER_PASSWORD_AUTH'
-        }
-      });
+      const form = document.getElementById('contactForm');
 
-      // Toggle forms
-      const showSignIn = document.getElementById('showSignIn');
-      const showSignUp = document.getElementById('showSignUp');
-      const customLogin = document.getElementById('customLogin');
-      const customSignUp = document.getElementById('customSignUp');
-
-      showSignIn.addEventListener('click', () => {
-        customLogin.style.display = 'block';
-        customSignUp.style.display = 'none';
-      });
-
-      showSignUp.addEventListener('click', () => {
-        customLogin.style.display = 'none';
-        customSignUp.style.display = 'block';
-      });
-
-      // Login form
-      const loginForm = document.getElementById('loginForm');
-      const loginError = document.getElementById('loginError');
-
-      loginForm.addEventListener('submit', async (e) => {
+      form.addEventListener('submit', async (e) => {
         e.preventDefault();
-        const email = document.getElementById('email').value;
-        const password = document.getElementById('password').value;
+
+        const formData = {
+          name: form.name.value,
+          email: form.email.value,
+          message: form.message.value
+        };
 
         try {
-          const user = await Auth.signIn(email, password);
-          console.log('Login successful:', user);
-          window.location.href = '/'; // redirect after login
-        } catch (err) {
-          console.error('Login error:', err);
-          loginError.textContent = err.message || 'Login failed';
-        }
-      });
-
-      // Sign-up form
-      const signUpForm = document.getElementById('signUpForm');
-      const signUpError = document.getElementById('signUpError');
-
-      signUpForm.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const email = document.getElementById('signUpEmail').value;
-        const password = document.getElementById('signUpPassword').value;
-
-        try {
-          const data = await Auth.signUp({
-            username: email,
-            password,
-            attributes: { email }
+          const response = await fetch(`${backendURL}/contact`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(formData)
           });
-          console.log('Sign-up successful:', data);
-          signUpError.textContent = 'Sign-up successful! Please check your email to confirm.';
-        } catch (err) {
-          console.error('Sign-up error:', err);
-          signUpError.textContent = err.message || 'Sign-up failed';
+
+          const result = await response.json();
+          alert(result.message); // Show success message
+
+          form.reset(); // Clear form fields
+        } catch (error) {
+          console.error('Error submitting form:', error);
+          alert('There was an error submitting your message.');
         }
       });
     </script>
