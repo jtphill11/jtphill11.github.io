@@ -100,18 +100,22 @@
               <li><a href="#">LinkedIn</a></li>
             </ul>
           </div>
+
           <div class="medium-6 cell">
-            <label>Name
-              <input type="text" placeholder="Name">
-            </label>
-            <label>Email
-              <input type="text" placeholder="Email">
-            </label>
-            <label>
-              Message
-              <textarea placeholder="I'm interested in..."></textarea>
-            </label>
-            <input type="submit" class="button expanded" value="Submit">
+            <!-- Contact Form -->
+            <form id="contactForm">
+              <label>Name
+                <input type="text" name="name" placeholder="Name" required>
+              </label>
+              <label>Email
+                <input type="email" name="email" placeholder="Email" required>
+              </label>
+              <label>
+                Message
+                <textarea name="message" placeholder="I'm interested in..." required></textarea>
+              </label>
+              <input type="submit" class="button expanded" value="Submit">
+            </form>
           </div>
         </div>
       </article>
@@ -122,7 +126,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/foundation/6.4.3/js/foundation.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/motion-ui/1.2.3/motion-ui.min.js"></script>
 
-    <!-- Fixed Cognito Login Script -->
+    <!-- Cognito Login Script -->
     <script type="module">
       import { UserManager } from "https://cdn.jsdelivr.net/npm/oidc-client-ts@2.2.3/+esm";
 
@@ -144,6 +148,39 @@
       document.getElementById("signUp").addEventListener("click", async () => {
         console.log("Redirecting to Cognito sign-up...");
         await userManager.signinRedirect({ screen_hint: "signup" });
+      });
+    </script>
+
+    <!-- Contact Form JS -->
+    <script>
+      const backendURL = 'http://bullride-backend-env.eba-afbnipvp.us-east-1.elasticbeanstalk.com';
+
+      const form = document.getElementById('contactForm');
+
+      form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        const formData = {
+          name: form.name.value,
+          email: form.email.value,
+          message: form.message.value
+        };
+
+        try {
+          const response = await fetch(`${backendURL}/contact`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(formData)
+          });
+
+          const result = await response.json();
+          alert(result.message); // Show success message
+
+          form.reset(); // Clear form fields
+        } catch (error) {
+          console.error('Error submitting form:', error);
+          alert('There was an error submitting your message.');
+        }
       });
     </script>
 
