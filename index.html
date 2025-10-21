@@ -189,19 +189,24 @@
 
     /* ====== Animated Square Effect ====== */
     .square {
-      position: relative;
       width: 80px;
       height: 80px;
-      background: #fff;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      grid-template-rows: repeat(3, 1fr);
+      gap: 3px;
+      background: none;
       margin: 0 auto 1rem;
-      transform-origin: center;
       animation: rotateSquare 10s linear infinite;
+      transform-origin: center;
       cursor: pointer;
-      transition: transform 0.4s ease, box-shadow 0.4s ease;
-      border-radius: 4px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
+      transition: transform 0.4s ease, box-shadow 0.4s ease, gap 0.4s ease;
+    }
+
+    .square div {
+      background: #fff;
+      border-radius: 2px;
+      transition: transform 0.3s ease, opacity 0.3s ease;
     }
 
     @keyframes rotateSquare {
@@ -209,33 +214,22 @@
       to { transform: rotate(360deg); }
     }
 
+    /* Hover: expands as a whole but keeps 9 visible tiles */
     .square:hover {
-      transform: scale(1.2) rotate(0deg);
+      transform: scale(1.25) rotate(0deg);
+      gap: 6px;
       box-shadow: 0 0 25px rgba(255,255,255,0.6);
     }
 
-    .square.split {
-      background: none;
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      grid-template-rows: repeat(3, 1fr);
-      gap: 5px;
-    }
-
-    .square.split div {
-      background: #fff;
-      border-radius: 2px;
-      transition: transform 0.3s ease, opacity 0.3s ease;
-    }
-
-    .square.split div:hover {
-      transform: scale(1.15);
+    .square div:hover {
+      transform: scale(1.1);
       opacity: 0.85;
     }
 
+    /* Click pulse */
     .square.clicked {
-      transform: scale(1.05) rotate(0deg);
-      box-shadow: 0 0 30px rgba(255,255,255,0.8);
+      transform: scale(1.05);
+      box-shadow: 0 0 30px rgba(255,255,255,0.9);
     }
 
     @media (max-width: 768px) {
@@ -259,27 +253,51 @@
 
     <section class="grid">
       <div class="cell">
-        <div class="square"></div>
+        <div class="square">
+          <div></div><div></div><div></div>
+          <div></div><div></div><div></div>
+          <div></div><div></div><div></div>
+        </div>
         <h5>Create ETFs</h5>
       </div>
       <div class="cell">
-        <div class="square"></div>
+        <div class="square">
+          <div></div><div></div><div></div>
+          <div></div><div></div><div></div>
+          <div></div><div></div><div></div>
+        </div>
         <h5>Share ETFs</h5>
       </div>
       <div class="cell">
-        <div class="square"></div>
+        <div class="square">
+          <div></div><div></div><div></div>
+          <div></div><div></div><div></div>
+          <div></div><div></div><div></div>
+        </div>
         <h5>Trending ETFs</h5>
       </div>
       <div class="cell">
-        <div class="square"></div>
+        <div class="square">
+          <div></div><div></div><div></div>
+          <div></div><div></div><div></div>
+          <div></div><div></div><div></div>
+        </div>
         <h5>Rising ETFs</h5>
       </div>
       <div class="cell">
-        <div class="square"></div>
+        <div class="square">
+          <div></div><div></div><div></div>
+          <div></div><div></div><div></div>
+          <div></div><div></div><div></div>
+        </div>
         <h5>Politician ETFs</h5>
       </div>
       <div class="cell">
-        <div class="square"></div>
+        <div class="square">
+          <div></div><div></div><div></div>
+          <div></div><div></div><div></div>
+          <div></div><div></div><div></div>
+        </div>
         <h5>r/wallstreetbets ETFs</h5>
       </div>
     </section>
@@ -347,22 +365,8 @@
       }
     });
 
-    // ===== Animated Squares =====
+    // Click animation pulse
     document.querySelectorAll('.square').forEach(square => {
-      // Create 9 inner divs for the split animation
-      const smallSquares = Array.from({ length: 9 }, () => document.createElement('div'));
-      smallSquares.forEach(div => square.appendChild(div));
-
-      // Hover effect — only toggle split (rotation continues)
-      square.addEventListener('mouseenter', () => {
-        square.classList.add('split');
-      });
-
-      square.addEventListener('mouseleave', () => {
-        square.classList.remove('split');
-      });
-
-      // Click animation pulse
       square.addEventListener('click', () => {
         square.classList.add('clicked');
         setTimeout(() => square.classList.remove('clicked'), 300);
