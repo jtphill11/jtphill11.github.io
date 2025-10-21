@@ -31,26 +31,27 @@ app.post('/contact', async (req, res) => {
 
   const params = {
     Source: 'info@bullride.us',           // verified sender
-    Destination: { ToAddresses: ['info@bullride.us'] }, // your inbox
+    Destination: { ToAddresses: ['info@bullride.us'] },
     Message: {
-      Subject: { Data: `New Contact Form Message from ${name}` },
+      Subject: { Data: `New Message from ${name} through contact form` },
       Body: {
-        Text: {
-          Data: `Name: ${name}\nEmail: ${email}\nMessage: ${message}`,
-        },
+        Text: { Data: `Name: ${name}\nEmail: ${email}\nMessage: ${message}` },
       },
     },
-    ReplyToAddresses: [email], // reply goes to the user
+    ReplyToAddresses: [email],
   };
 
   try {
-    await ses.sendEmail(params).promise();
-    res.json({ status: 'success', message: 'Thank you for contacting Bullride!' });
+    console.log('Sending email with params:', params);  // <-- log params
+    const result = await ses.sendEmail(params).promise();
+    console.log('SES result:', result);                  // <-- log SES response
+    res.json({ status: 'success', message: 'Message sent!' });
   } catch (error) {
-    console.error('Error sending email:', error);
-    res.status(500).json({ status: 'error', message: 'Failed to send message' });
+    console.error('Error sending email:', error);        // <-- log full error
+    res.status(500).json({ status: 'error', message: error.message });
   }
 });
+
 
 // Listen on the port assigned by Elastic Beanstalk
 const port = process.env.PORT || 3000;
