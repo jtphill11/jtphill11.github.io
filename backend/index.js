@@ -1,6 +1,7 @@
 // index.js
 const express = require('express');
 const cors = require('cors');
+const AWS = require('aws-sdk');
 
 const app = express();
 
@@ -9,6 +10,10 @@ app.use(cors());
 
 // Parse JSON bodies
 app.use(express.json());
+
+// Configure AWS SES
+AWS.config.update({ region: 'us-east-1' }); // SES region
+const ses = new AWS.SES({ apiVersion: '2010-12-01' });
 
 // Root route
 app.get('/', (req, res) => {
@@ -21,13 +26,30 @@ app.get('/api', (req, res) => {
 });
 
 // Contact form route
-app.post('/contact', (req, res) => {
+app.post('/contact', async (req, res) => {
   const { name, email, message } = req.body;
 
-  // For now, just log it
-  console.log(`Contact submission from ${name} (${email}): ${message}`);
+  const params = {
+    Source: 'info@bullride.us',           // verified sender
+    Destination: { ToAddresses: ['info@bullride.us'] }, // your inbox
+    Message: {
+      Subject: { Data: `New Contact Form Message from ${name}` },
+      Body: {
+        Text: {
+          Data: `Name: ${name}\nEmail: ${email}\nMessage: ${message}`,
+        },
+      },
+    },
+    ReplyToAddresses: [email], // reply goes to the user
+  };
 
-  res.json({ status: 'success', message: 'Thank you for contacting Bullride!' });
+  try {
+    await ses.sendEmail(params).promise();
+    res.json({ status: 'success', message: 'Thank you for contacting Bullride!' });
+  } catch (error) {
+    console.error('Error sending email:', error);
+    res.status(500).json({ status: 'error', message: 'Failed to send message' });
+  }
 });
 
 // Listen on the port assigned by Elastic Beanstalk
