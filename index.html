@@ -98,6 +98,10 @@
       text-align: center;
       transition: transform 0.3s ease, opacity 0.3s ease;
       opacity: 0.9;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      cursor: pointer;
     }
 
     .cell:hover {
@@ -105,15 +109,75 @@
       opacity: 1;
     }
 
-    .cell img {
-      width: 80px;
-      margin-bottom: 1rem;
-      filter: brightness(10);
-    }
-
     h5 {
       font-weight: 500;
       letter-spacing: 0.5px;
+      margin-top: 1rem;
+    }
+
+    /* Rotating Square */
+    .square {
+      position: relative;
+      width: 100px;
+      height: 100px;
+      background: #fff;
+      transform-style: preserve-3d;
+      animation: slowRotate 8s linear infinite;
+      border-radius: 6px;
+      transition: all 0.6s ease;
+      display: grid;
+      place-items: center;
+      overflow: hidden;
+    }
+
+    .square .mini {
+      position: absolute;
+      width: 33.33%;
+      height: 33.33%;
+      background: #fff;
+      opacity: 0;
+      transform: scale(0.95);
+      transition: all 0.5s ease;
+      border-radius: 2px;
+    }
+
+    /* 3x3 positioning */
+    .square .mini:nth-child(1) { top: 0; left: 0; }
+    .square .mini:nth-child(2) { top: 0; left: 33.33%; }
+    .square .mini:nth-child(3) { top: 0; left: 66.66%; }
+    .square .mini:nth-child(4) { top: 33.33%; left: 0; }
+    .square .mini:nth-child(5) { top: 33.33%; left: 33.33%; }
+    .square .mini:nth-child(6) { top: 33.33%; left: 66.66%; }
+    .square .mini:nth-child(7) { top: 66.66%; left: 0; }
+    .square .mini:nth-child(8) { top: 66.66%; left: 33.33%; }
+    .square .mini:nth-child(9) { top: 66.66%; left: 66.66%; }
+
+    /* Hover split */
+    .cell:hover .square {
+      background: transparent;
+      animation-play-state: paused;
+    }
+
+    .cell:hover .square .mini {
+      opacity: 1;
+      transform: scale(1);
+    }
+
+    /* Click pulse animation */
+    .square.clicked {
+      animation: pulse 0.4s ease;
+    }
+
+    /* Animations */
+    @keyframes slowRotate {
+      0% { transform: rotateY(0deg) rotateX(0deg); }
+      100% { transform: rotateY(360deg) rotateX(360deg); }
+    }
+
+    @keyframes pulse {
+      0% { transform: scale(1) rotate(0deg); }
+      50% { transform: scale(1.1) rotate(5deg); }
+      100% { transform: scale(1) rotate(0deg); }
     }
 
     /* Contact Section */
@@ -213,12 +277,59 @@
     <p class="lead">The Spotify of Wall Street. Create your own ETFs, share them, or use AI-generated baskets — a revolutionary way to invest in the market.</p>
 
     <section class="grid">
-      <div class="cell"><img src="assets/etf_icon.png" alt=""><h5>Create ETFs</h5></div>
-      <div class="cell"><img src="assets/etf_icon.png" alt=""><h5>Share ETFs</h5></div>
-      <div class="cell"><img src="assets/etf_icon.png" alt=""><h5>Trending ETFs</h5></div>
-      <div class="cell"><img src="assets/etf_icon.png" alt=""><h5>Rising ETFs</h5></div>
-      <div class="cell"><img src="assets/etf_icon.png" alt=""><h5>Politician ETFs</h5></div>
-      <div class="cell"><img src="assets/etf_icon.png" alt=""><h5>r/wallstreetbets ETFs</h5></div>
+      <div class="cell">
+        <div class="square">
+          <div class="mini"></div><div class="mini"></div><div class="mini"></div>
+          <div class="mini"></div><div class="mini"></div><div class="mini"></div>
+          <div class="mini"></div><div class="mini"></div><div class="mini"></div>
+        </div>
+        <h5>Create ETFs</h5>
+      </div>
+
+      <div class="cell">
+        <div class="square">
+          <div class="mini"></div><div class="mini"></div><div class="mini"></div>
+          <div class="mini"></div><div class="mini"></div><div class="mini"></div>
+          <div class="mini"></div><div class="mini"></div><div class="mini"></div>
+        </div>
+        <h5>Share ETFs</h5>
+      </div>
+
+      <div class="cell">
+        <div class="square">
+          <div class="mini"></div><div class="mini"></div><div class="mini"></div>
+          <div class="mini"></div><div class="mini"></div><div class="mini"></div>
+          <div class="mini"></div><div class="mini"></div><div class="mini"></div>
+        </div>
+        <h5>Trending ETFs</h5>
+      </div>
+
+      <div class="cell">
+        <div class="square">
+          <div class="mini"></div><div class="mini"></div><div class="mini"></div>
+          <div class="mini"></div><div class="mini"></div><div class="mini"></div>
+          <div class="mini"></div><div class="mini"></div><div class="mini"></div>
+        </div>
+        <h5>Rising ETFs</h5>
+      </div>
+
+      <div class="cell">
+        <div class="square">
+          <div class="mini"></div><div class="mini"></div><div class="mini"></div>
+          <div class="mini"></div><div class="mini"></div><div class="mini"></div>
+          <div class="mini"></div><div class="mini"></div><div class="mini"></div>
+        </div>
+        <h5>Politician ETFs</h5>
+      </div>
+
+      <div class="cell">
+        <div class="square">
+          <div class="mini"></div><div class="mini"></div><div class="mini"></div>
+          <div class="mini"></div><div class="mini"></div><div class="mini"></div>
+          <div class="mini"></div><div class="mini"></div><div class="mini"></div>
+        </div>
+        <h5>r/wallstreetbets ETFs</h5>
+      </div>
     </section>
 
     <section class="contact">
@@ -282,6 +393,15 @@
       } catch {
         alert('There was an error submitting your message.');
       }
+    });
+
+    // ETF Square click animation
+    document.querySelectorAll('.square').forEach(sq => {
+      sq.addEventListener('click', () => {
+        sq.classList.remove('clicked');
+        void sq.offsetWidth; // reflow
+        sq.classList.add('clicked');
+      });
     });
   </script>
 </body>
