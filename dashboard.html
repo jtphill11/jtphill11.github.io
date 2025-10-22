@@ -415,6 +415,7 @@
         if (window.location.search.includes("code=")) {
           await userManager.signinRedirectCallback();
           window.history.replaceState({}, document.title, "/dashboard");
+          window.location.reload(); // refresh once after successful sign-in
         }
 
         // Check session
