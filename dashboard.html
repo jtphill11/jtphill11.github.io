@@ -411,26 +411,35 @@
       try {
         let user;
 
-        // Case 1: user just returned from Cognito (has ?code=... in URL)
+        // Handle redirect callback after login
         if (window.location.search.includes("code=")) {
           try {
             await userManager.signinRedirectCallback();
-            // Clean the URL (remove ?code=...)
             window.history.replaceState({}, document.title, "/dashboard");
           } catch (callbackErr) {
             console.error("Error completing Cognito redirect:", callbackErr);
           }
         }
 
-        // Case 2: normal dashboard visit — check if user is signed in
+        // Try normal session
         user = await userManager.getUser();
+
+        // ✅ Try silent sign-in if no user but Cognito session still exists
         if (!user) {
-          // Not signed in — redirect to homepage
+          try {
+            user = await userManager.signinSilent();
+          } catch (silentErr) {
+            console.warn("Silent sign-in failed:", silentErr);
+          }
+        }
+
+        // No valid user after all checks → redirect home
+        if (!user) {
           window.location.href = "https://bullride.us";
           return;
         }
 
-        // Load user info *after* session is confirmed
+        // Load initials
         if (user.profile) {
           const fullName =
             user.profile.name ||
