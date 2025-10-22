@@ -398,34 +398,45 @@
     <script type="module">
     import { UserManager } from "https://cdn.jsdelivr.net/npm/oidc-client-ts@2.2.3/+esm";
 
-    // --- Handle Cognito callback and redirect check ---
-    (async () => {
-      const userManager = new UserManager({
-        authority: "https://cognito-idp.us-east-1.amazonaws.com/us-east-1_HPx82G5s7",
-        client_id: "2l15ru0njbo72tv2skuceokjf2",
-        redirect_uri: "https://bullride.us/dashboard",
-        response_type: "code",
-        scope: "openid email phone profile"
-      });
+    const userManager = new UserManager({
+      authority: "https://cognito-idp.us-east-1.amazonaws.com/us-east-1_HPx82G5s7",
+      client_id: "2l15ru0njbo72tv2skuceokjf2",
+      redirect_uri: "https://bullride.us/dashboard",
+      response_type: "code",
+      scope: "openid email phone profile"
+    });
 
+    // Make available to other scripts
+    window.userManager = userManager;
+
+    (async () => {
       try {
-        // If URL contains ?code=..., handle login redirect
+        // Handle Cognito redirect first
         if (window.location.search.includes("code=")) {
           await userManager.signinRedirectCallback();
-          window.history.replaceState({}, document.title, "/dashboard"); // clean URL
+          window.history.replaceState({}, document.title, "/dashboard");
         }
 
+        // Check session
         const user = await userManager.getUser();
-
         if (!user || user.expired) {
-          // Not logged in, send home
           window.location.href = "https://bullride.us";
+          return;
         }
+
+        // Logged in — continue loading rest of the page
+        initDashboard(user);
       } catch (err) {
-        console.error("Error verifying user:", err);
+        console.error("Login check failed:", err);
         window.location.href = "https://bullride.us";
       }
     })();
+
+    // Everything else runs only after user verified
+    async function initDashboard(user) {
+      // existing dashboard code goes here ↓
+      // (sidebar toggles, profile menu, theme toggle, etc.)
+    }
 
     const sidebar = document.getElementById("sidebar");
     const toggleSidebar = document.getElementById("toggleSidebar");
