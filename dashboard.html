@@ -320,9 +320,16 @@
 <body>
   <aside class="sidebar" id="sidebar">
     <img src="assets/bullride1055_v2.png" alt="Bullride Logo">
+
+    <!-- MAIN NAVIGATION -->
     <button class="button" id="dashboardBtn">Dashboard</button>
+    <button class="button" id="creationsBtn">My Creations</button>
+    <button class="button" id="investmentsBtn">My Investments</button>
     <button class="button" id="exploreBtn">Explore</button>
-    <p>Welcome to your dashboard. Manage your ETFs, explore markets, and discover trending baskets.</p>
+
+    <p style="margin-top:1rem;font-size:0.9rem;opacity:0.8;">
+      Welcome to your dashboard. Manage your ETFs, explore markets, and discover trending baskets.
+    </p>
   </aside>
 
   <div class="toggle-btn" id="toggleSidebar">
@@ -551,6 +558,66 @@
         window.location.href = "https://bullride.us";
       }
     });
+
+    // --- MY CREATIONS PAGE ---
+    document.getElementById("creationsBtn").addEventListener("click", async () => {
+      const main = document.querySelector("main");
+      main.innerHTML = `
+        <h1>My Creations</h1>
+        <p class="lead">Baskets you've built and shared with the community.</p>
+
+        <section style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:2rem;">
+          <div style="background:rgba(255,255,255,0.05);padding:1.5rem;border-radius:12px;border:1px solid rgba(255,255,255,0.1);text-align:center;">
+            <h3>Your Tech Titans Basket</h3>
+            <p>+5.3% this week</p>
+            <button style="margin-top:1rem;padding:0.6rem 1rem;border:none;border-radius:6px;background:#fff;color:#000;cursor:pointer;">Edit Basket</button>
+          </div>
+
+          <div style="background:rgba(255,255,255,0.05);padding:1.5rem;border-radius:12px;border:1px solid rgba(255,255,255,0.1);text-align:center;">
+            <h3>Green Energy Growth</h3>
+            <p>+2.1% this week</p>
+            <button style="margin-top:1rem;padding:0.6rem 1rem;border:none;border-radius:6px;background:#fff;color:#000;cursor:pointer;">Edit Basket</button>
+          </div>
+
+          <div style="display:flex;align-items:center;justify-content:center;border:2px dashed rgba(255,255,255,0.3);border-radius:12px;cursor:pointer;transition:all 0.3s ease;">
+            <span style="font-size:1.2rem;opacity:0.8;">+ Create New Basket</span>
+          </div>
+        </section>
+      `;
+    });
+
+    // --- MY INVESTMENTS PAGE ---
+    document.getElementById("investmentsBtn").addEventListener("click", async () => {
+      const main = document.querySelector("main");
+      main.innerHTML = `
+        <h1>My Investments</h1>
+        <p class="lead">Baskets you've purchased or invested in — your active portfolio overview.</p>
+
+        <section style="display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:2rem;">
+          <div style="background:rgba(255,255,255,0.05);padding:1.5rem;border-radius:12px;border:1px solid rgba(255,255,255,0.1);">
+            <h3>AI Innovators Fund</h3>
+            <p>Created by @sophia</p>
+            <p style="margin-top:0.5rem;">Return: <strong style="color:lightgreen;">+8.7%</strong></p>
+            <button style="margin-top:1rem;padding:0.6rem 1rem;border:none;border-radius:6px;background:#fff;color:#000;cursor:pointer;">View Details</button>
+          </div>
+
+          <div style="background:rgba(255,255,255,0.05);padding:1.5rem;border-radius:12px;border:1px solid rgba(255,255,255,0.1);">
+            <h3>Green Energy Growth</h3>
+            <p>Created by You</p>
+            <p style="margin-top:0.5rem;">Return: <strong style="color:lightgreen;">+2.1%</strong></p>
+            <button style="margin-top:1rem;padding:0.6rem 1rem;border:none;border-radius:6px;background:#fff;color:#000;cursor:pointer;">View Details</button>
+          </div>
+
+          <div style="background:rgba(255,255,255,0.05);padding:1.5rem;border-radius:12px;border:1px solid rgba(255,255,255,0.1);">
+            <h3>Tech Titans Basket</h3>
+            <p>Created by You</p>
+            <p style="margin-top:0.5rem;">Return: <strong style="color:red;">-1.4%</strong></p>
+            <button style="margin-top:1rem;padding:0.6rem 1rem;border:none;border-radius:6px;background:#fff;color:#000;cursor:pointer;">View Details</button>
+          </div>
+        </section>
+      `;
+    });
+
   </script>
 </body>
 </html>
