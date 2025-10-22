@@ -394,57 +394,46 @@
     </form>
   </section>
 
-    <script type="module">
-      import { UserManager } from "https://cdn.jsdelivr.net/npm/oidc-client-ts@2.2.3/+esm";
+  <script type="module">
+    import { UserManager } from "https://cdn.jsdelivr.net/npm/oidc-client-ts@2.2.3/+esm";
 
-      const userManager = new UserManager({
-        authority: "https://cognito-idp.us-east-1.amazonaws.com/us-east-1_HPx82G5s7",
-        client_id: "2l15ru0njbo72tv2skuceokjf2",
-        redirect_uri: "https://bullride.us/dashboard",
-        response_type: "code",
-        scope: "openid email phone profile"
-      });
+    const userManager = new UserManager({
+      authority: "https://cognito-idp.us-east-1.amazonaws.com/us-east-1_HPx82G5s7",
+      client_id: "2l15ru0njbo72tv2skuceokjf2",
+      redirect_uri: "https://bullride.us/dashboard",
+      response_type: "code",
+      scope: "openid email phone profile"
+    });
 
-      // Wait until the DOM is fully loaded so elements exist
-      document.addEventListener("DOMContentLoaded", async () => {
-        const buttonsContainer = document.querySelector(".buttons");
-        const signInBtn = document.getElementById("signIn");
-        const signUpBtn = document.getElementById("signUp");
+    const signInBtn = document.getElementById("signIn");
+    const signUpBtn = document.getElementById("signUp");
+    const buttonsContainer = document.querySelector(".buttons");
 
-        async function checkUser() {
-          let user = await userManager.getUser();
+    async function checkUser() {
+      const user = await userManager.getUser();
 
-          // ✅ Try silent sign-in if no user but Cognito session still exists
-          if (!user || user.expired) {
-            try {
-              user = await userManager.signinSilent();
-            } catch (silentErr) {
-              console.warn("Silent sign-in failed or no session:", silentErr);
-            }
-          }
+      if (user && !user.expired) {
+        // user is signed in
+        buttonsContainer.innerHTML = `
+          <button class="button" id="goDashboard">Go to Dashboard</button>
+        `;
+        document.getElementById("goDashboard").addEventListener("click", () => {
+          window.location.href = "/dashboard";
+        });
+      } else {
+        // user is not signed in
+        signInBtn.addEventListener("click", async () => {
+          await userManager.signinRedirect();
+        });
+        signUpBtn.addEventListener("click", async () => {
+          await userManager.signinRedirect({ screen_hint: "signup" });
+        });
+      }
+    }
 
-          if (user && !user.expired) {
-            // user is signed in → replace the login/signup buttons
-            buttonsContainer.innerHTML = `
-              <button class="button" id="goDashboard">Go to Dashboard</button>
-            `;
-            document.getElementById("goDashboard").addEventListener("click", () => {
-              window.location.href = "/dashboard";
-            });
-          } else {
-            // user is not signed in → attach login/signup handlers
-            signInBtn.addEventListener("click", async () => {
-              await userManager.signinRedirect();
-            });
-            signUpBtn.addEventListener("click", async () => {
-              await userManager.signinRedirect({ screen_hint: "signup" });
-            });
-          }
-        }
+    checkUser();
+  </script>
 
-        checkUser();
-      });
-    </script>
 
   <script>
     // Mouse parallax hover effect for the circle
