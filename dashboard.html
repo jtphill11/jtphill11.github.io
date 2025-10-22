@@ -32,24 +32,18 @@
       align-items: center;
       padding: 2rem 1rem;
       transform: translateX(0);
-      transition: transform 0.4s ease, width 0.3s ease;
-      z-index: 100;
+      transition: transform 0.4s ease;
+      z-index: 200;
     }
 
-    .sidebar.collapsed {
-      transform: translateX(-190px);
-      width: 70px;
+    .sidebar.hidden {
+      transform: translateX(-100%);
     }
 
     .sidebar img {
       width: 140px;
       margin-bottom: 2rem;
       filter: brightness(1.5);
-      transition: opacity 0.3s ease;
-    }
-
-    .sidebar.collapsed img {
-      opacity: 0;
     }
 
     .sidebar .button {
@@ -72,49 +66,41 @@
       box-shadow: 0 0 10px #fff;
     }
 
+    /* Toggle Button */
     .toggle-btn {
-      position: absolute;
-      top: 15px;
-      right: -15px;
+      position: fixed;
+      top: 25px;
+      left: 20px;
       background: #fff;
-      color: #000;
-      width: 30px;
-      height: 30px;
+      width: 32px;
+      height: 32px;
       border-radius: 50%;
-      font-weight: bold;
       display: flex;
-      justify-content: center;
       align-items: center;
+      justify-content: center;
       cursor: pointer;
-      z-index: 200;
+      z-index: 300;
+      transition: transform 0.3s ease, background 0.3s ease;
+    }
+
+    .toggle-dot {
+      width: 10px;
+      height: 10px;
+      background: #000;
+      border-radius: 50%;
       transition: transform 0.3s ease;
+    }
+
+    .sidebar.hidden ~ .toggle-btn .toggle-dot {
+      transform: translateX(0);
+    }
+
+    .sidebar:not(.hidden) ~ .toggle-btn .toggle-dot {
+      transform: translateX(4px);
     }
 
     .toggle-btn:hover {
       transform: scale(1.1);
-    }
-
-    main {
-      margin-left: 280px;
-      padding: 4rem 3rem;
-      transition: margin-left 0.4s ease;
-    }
-
-    .collapsed ~ main {
-      margin-left: 100px;
-    }
-
-    h1 {
-      font-size: 2.8rem;
-      font-weight: 600;
-      margin-bottom: 1rem;
-    }
-
-    .lead {
-      font-size: 1.2rem;
-      color: #aaa;
-      max-width: 700px;
-      margin-bottom: 3rem;
     }
 
     /* Profile icon */
@@ -183,6 +169,31 @@
       color: #aaa;
     }
 
+    /* Main content */
+    main {
+      margin-left: 280px;
+      padding: 4rem 3rem;
+      transition: margin-left 0.4s ease;
+    }
+
+    .sidebar.hidden ~ main {
+      margin-left: 0;
+    }
+
+    h1 {
+      font-size: 2.8rem;
+      font-weight: 600;
+      margin-bottom: 1rem;
+    }
+
+    .lead {
+      font-size: 1.2rem;
+      color: #aaa;
+      max-width: 700px;
+      margin-bottom: 3rem;
+    }
+
+    /* Grid Squares */
     .grid {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
@@ -222,15 +233,15 @@
       transition: transform 0.3s ease, opacity 0.3s ease;
     }
 
-    @keyframes rotateSquare {
-      from { transform: rotate(0deg); }
-      to { transform: rotate(360deg); }
-    }
-
     .square:hover {
       transform: scale(1.25);
       gap: 6px;
       box-shadow: 0 0 25px rgba(255,255,255,0.6);
+    }
+
+    @keyframes rotateSquare {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
     }
 
     @keyframes fadeIn {
@@ -252,20 +263,24 @@
         padding: 2rem;
       }
       .toggle-btn {
-        right: 15px;
+        top: 15px;
+        left: 15px;
       }
     }
   </style>
 </head>
 
 <body>
-  <aside class="sidebar">
-    <div class="toggle-btn" id="toggleSidebar">&lt;</div>
+  <aside class="sidebar" id="sidebar">
     <img src="assets/bullride1055_v2.png" alt="Bullride Logo">
     <button class="button" id="dashboardBtn">Dashboard</button>
     <button class="button" id="exploreBtn">Explore</button>
     <p>Welcome to your dashboard. Manage your ETFs, explore markets, and discover trending baskets.</p>
   </aside>
+
+  <div class="toggle-btn" id="toggleSidebar">
+    <div class="toggle-dot"></div>
+  </div>
 
   <div class="profile" id="profileIcon">U</div>
   <div class="profile-menu" id="profileMenu">
@@ -325,7 +340,7 @@
     scope: "openid email phone profile"
   });
 
-  const sidebar = document.querySelector(".sidebar");
+  const sidebar = document.getElementById("sidebar");
   const toggleSidebar = document.getElementById("toggleSidebar");
   const profileIcon = document.getElementById("profileIcon");
   const profileMenu = document.getElementById("profileMenu");
@@ -334,16 +349,15 @@
   toggleSidebar.addEventListener("click", () => {
     if (window.innerWidth <= 768) {
       sidebar.classList.toggle("active");
-      toggleSidebar.textContent = sidebar.classList.contains("active") ? ">" : "<";
     } else {
-      sidebar.classList.toggle("collapsed");
-      toggleSidebar.textContent = sidebar.classList.contains("collapsed") ? ">" : "<";
+      sidebar.classList.toggle("hidden");
     }
   });
 
   profileIcon.addEventListener("click", () => {
     profileMenu.classList.toggle("active");
   });
+
   closeProfile.addEventListener("click", () => {
     profileMenu.classList.remove("active");
   });
@@ -352,7 +366,6 @@
     try {
       let user = await userManager.getUser();
       if (!user) user = await userManager.signinRedirectCallback();
-
       if (user && user.profile) {
         const fullName = user.profile.name || user.profile.given_name || user.profile.email || "User";
         const names = fullName.split(" ");
@@ -377,13 +390,6 @@
     } catch {
       window.location.href = "https://bullride.us";
     }
-  });
-
-  document.querySelectorAll('.square').forEach(square => {
-    square.addEventListener('click', () => {
-      square.classList.add('clicked');
-      setTimeout(() => square.classList.remove('clicked'), 300);
-    });
   });
   </script>
 </body>
