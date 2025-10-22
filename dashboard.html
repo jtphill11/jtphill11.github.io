@@ -409,6 +409,8 @@
     // --- Handle Cognito login callback & redirect unauthenticated users ---
     (async () => {
       try {
+        let user;
+
         // Case 1: user just returned from Cognito (has ?code=... in URL)
         if (window.location.search.includes("code=")) {
           try {
@@ -421,18 +423,30 @@
         }
 
         // Case 2: normal dashboard visit — check if user is signed in
-        const user = await userManager.getUser();
+        user = await userManager.getUser();
         if (!user) {
-          // Not signed in — redirect to homepage (or you can change to login URL)
+          // Not signed in — redirect to homepage
           window.location.href = "https://bullride.us";
           return;
+        }
+
+        // Load user info *after* session is confirmed
+        if (user.profile) {
+          const fullName =
+            user.profile.name ||
+            user.profile.given_name ||
+            user.profile.email ||
+            "User";
+          const names = fullName.split(" ");
+          const initials = (names[0]?.[0] || "") + (names[1]?.[0] || "");
+          document.getElementById("profileIcon").textContent =
+            initials.toUpperCase();
         }
       } catch (err) {
         console.error("Auth check failed:", err);
         window.location.href = "https://bullride.us";
       }
     })();
-
 
     const sidebar = document.getElementById("sidebar");
     const toggleSidebar = document.getElementById("toggleSidebar");
