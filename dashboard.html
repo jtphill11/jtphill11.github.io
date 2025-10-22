@@ -406,22 +406,24 @@
       scope: "openid email phone profile"
     });
 
-    // --- Redirect unauthenticated users to home ---
+    // --- Handle Cognito login callback & redirect unauthenticated users ---
     (async () => {
       try {
-        let user = await userManager.getUser();
-
-        // if there's no local session, try to complete a Cognito login callback
-        if (!user) {
+        // Case 1: user just returned from Cognito (has ?code=... in URL)
+        if (window.location.search.includes("code=")) {
           try {
-            user = await userManager.signinRedirectCallback();
-          } catch {
-            // not coming from a redirect, so just no session yet
+            await userManager.signinRedirectCallback();
+            // Clean the URL (remove ?code=...)
+            window.history.replaceState({}, document.title, "/dashboard");
+          } catch (callbackErr) {
+            console.error("Error completing Cognito redirect:", callbackErr);
           }
         }
 
-        // still no user → redirect to home
+        // Case 2: normal dashboard visit — check if user is signed in
+        const user = await userManager.getUser();
         if (!user) {
+          // Not signed in — redirect to homepage (or you can change to login URL)
           window.location.href = "https://bullride.us";
           return;
         }
