@@ -172,10 +172,10 @@
       50% { box-shadow: 0 0 70px rgba(255,255,255,0.9); transform: scale(1.03); }
     }
 
-    /* Info Section */
+    /* Info Section (hidden on load) */
     .info-section {
       max-width: 800px;
-      margin: 2rem auto 4rem;
+      margin: 4rem auto;
       text-align: center;
       padding: 0 1rem;
       opacity: 0;
@@ -294,6 +294,7 @@
       color: #777;
       font-size: 0.85rem;
       margin: 2rem 0 1rem;
+      opacity: 0.7;
     }
 
     /* ===== Responsive ===== */
@@ -449,16 +450,16 @@
       circle.style.transform = 'translate(0, 0) scale(1)';
     });
 
+    // Scroll reveal (restore original behavior)
     const revealElements = document.querySelectorAll('.info-section, .contact');
-    const revealOnScroll = () => {
+    function revealOnScroll() {
       const triggerBottom = window.innerHeight * 0.85;
       revealElements.forEach(el => {
         const boxTop = el.getBoundingClientRect().top;
-        if (boxTop < triggerBottom) {
-          el.classList.add('visible');
-        }
+        if (boxTop < triggerBottom) el.classList.add('visible');
       });
-    };
+    }
+
     window.addEventListener('scroll', revealOnScroll);
     revealOnScroll();
 
