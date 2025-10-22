@@ -633,34 +633,11 @@
       `;
     });
 
-    // --- ADMIN PANEL PAGE ---
-    document.getElementById("adminBtn").addEventListener("click", async () => {
-      const main = document.querySelector("main");
-      main.innerHTML = `
-        <h1>Admin Panel</h1>
-        <p class="lead">Manage Bullride users, content, and analytics.</p>
-
-        <section style="display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:2rem;">
-          <div style="background:rgba(255,255,255,0.05);padding:1.5rem;border-radius:12px;border:1px solid rgba(255,255,255,0.1);">
-            <h3>User Management</h3>
-            <p>View and manage user accounts.</p>
-            <button style="margin-top:1rem;padding:0.6rem 1rem;border:none;border-radius:6px;background:#fff;color:#000;cursor:pointer;">Open</button>
-          </div>
-
-          <div style="background:rgba(255,255,255,0.05);padding:1.5rem;border-radius:12px;border:1px solid rgba(255,255,255,0.1);">
-            <h3>System Logs</h3>
-            <p>Monitor system activity and logs.</p>
-            <button style="margin-top:1rem;padding:0.6rem 1rem;border:none;border-radius:6px;background:#fff;color:#000;cursor:pointer;">View Logs</button>
-          </div>
-
-          <div style="background:rgba(255,255,255,0.05);padding:1.5rem;border-radius:12px;border:1px solid rgba(255,255,255,0.1);">
-            <h3>Analytics</h3>
-            <p>Track usage metrics and insights.</p>
-            <button style="margin-top:1rem;padding:0.6rem 1rem;border:none;border-radius:6px;background:#fff;color:#000;cursor:pointer;">View Analytics</button>
-          </div>
-        </section>
-      `;
+    // --- ADMIN PANEL BUTTON (redirect to admin page) ---
+    document.getElementById("adminBtn").addEventListener("click", () => {
+      window.location.href = "https://bullride.us/bradminlc_1.html";
     });
+
 
   </script>
 </body>
