@@ -326,6 +326,7 @@
     <button class="button" id="creationsBtn">My Creations</button>
     <button class="button" id="investmentsBtn">My Investments</button>
     <button class="button" id="exploreBtn">Explore</button>
+    <button class="button" id="adminBtn" style="display:none;">Admin Panel</button>
 
     <p style="margin-top:1rem;font-size:0.9rem;opacity:0.8;">
       Welcome to your dashboard. Manage your ETFs, explore markets, and discover trending baskets.
@@ -451,6 +452,20 @@
     }
 
     loadUser();
+
+    // --- Show Admin Panel only for @bullride.us users ---
+    async function checkAdminAccess() {
+      try {
+        const user = await userManager.getUser();
+        if (user && user.profile && user.profile.email && user.profile.email.endsWith("@bullride.us")) {
+          document.getElementById("adminBtn").style.display = "block";
+        }
+      } catch (err) {
+        console.error("Error checking admin access:", err);
+      }
+    }
+
+    checkAdminAccess();
 
     // --- THEME TOGGLE (Dark / Light Mode) ---
     const savedTheme = localStorage.getItem("bullride-theme");
@@ -613,6 +628,35 @@
             <p>Created by You</p>
             <p style="margin-top:0.5rem;">Return: <strong style="color:red;">-1.4%</strong></p>
             <button style="margin-top:1rem;padding:0.6rem 1rem;border:none;border-radius:6px;background:#fff;color:#000;cursor:pointer;">View Details</button>
+          </div>
+        </section>
+      `;
+    });
+
+    // --- ADMIN PANEL PAGE ---
+    document.getElementById("adminBtn").addEventListener("click", async () => {
+      const main = document.querySelector("main");
+      main.innerHTML = `
+        <h1>Admin Panel</h1>
+        <p class="lead">Manage Bullride users, content, and analytics.</p>
+
+        <section style="display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:2rem;">
+          <div style="background:rgba(255,255,255,0.05);padding:1.5rem;border-radius:12px;border:1px solid rgba(255,255,255,0.1);">
+            <h3>User Management</h3>
+            <p>View and manage user accounts.</p>
+            <button style="margin-top:1rem;padding:0.6rem 1rem;border:none;border-radius:6px;background:#fff;color:#000;cursor:pointer;">Open</button>
+          </div>
+
+          <div style="background:rgba(255,255,255,0.05);padding:1.5rem;border-radius:12px;border:1px solid rgba(255,255,255,0.1);">
+            <h3>System Logs</h3>
+            <p>Monitor system activity and logs.</p>
+            <button style="margin-top:1rem;padding:0.6rem 1rem;border:none;border-radius:6px;background:#fff;color:#000;cursor:pointer;">View Logs</button>
+          </div>
+
+          <div style="background:rgba(255,255,255,0.05);padding:1.5rem;border-radius:12px;border:1px solid rgba(255,255,255,0.1);">
+            <h3>Analytics</h3>
+            <p>Track usage metrics and insights.</p>
+            <button style="margin-top:1rem;padding:0.6rem 1rem;border:none;border-radius:6px;background:#fff;color:#000;cursor:pointer;">View Analytics</button>
           </div>
         </section>
       `;
