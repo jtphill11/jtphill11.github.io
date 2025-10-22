@@ -406,57 +406,6 @@
       scope: "openid email phone profile"
     });
 
-    // --- Handle Cognito login callback & redirect unauthenticated users ---
-    (async () => {
-      try {
-        let user;
-
-        // Handle redirect callback after login
-        if (window.location.search.includes("code=")) {
-          try {
-            await userManager.signinRedirectCallback();
-            window.history.replaceState({}, document.title, "/dashboard");
-          } catch (callbackErr) {
-            console.error("Error completing Cognito redirect:", callbackErr);
-          }
-        }
-
-        // Try normal session
-        user = await userManager.getUser();
-
-        // ✅ Try silent sign-in if no user but Cognito session still exists
-        if (!user) {
-          try {
-            user = await userManager.signinSilent();
-          } catch (silentErr) {
-            console.warn("Silent sign-in failed:", silentErr);
-          }
-        }
-
-        // No valid user after all checks → redirect home
-        if (!user) {
-          window.location.href = "https://bullride.us";
-          return;
-        }
-
-        // Load initials
-        if (user.profile) {
-          const fullName =
-            user.profile.name ||
-            user.profile.given_name ||
-            user.profile.email ||
-            "User";
-          const names = fullName.split(" ");
-          const initials = (names[0]?.[0] || "") + (names[1]?.[0] || "");
-          document.getElementById("profileIcon").textContent =
-            initials.toUpperCase();
-        }
-      } catch (err) {
-        console.error("Auth check failed:", err);
-        window.location.href = "https://bullride.us";
-      }
-    })();
-
     const sidebar = document.getElementById("sidebar");
     const toggleSidebar = document.getElementById("toggleSidebar");
     const profileIcon = document.getElementById("profileIcon");
