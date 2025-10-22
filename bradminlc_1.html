@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Bullride | Admin Panel</title>
+  <title>Bullride | Admin Chat</title>
 
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -11,236 +11,133 @@
       font-family: 'Inter', sans-serif;
       background-color: #000;
       color: #fff;
-      overflow-x: hidden;
-      line-height: 1.6;
-      display: none; /* hidden until verified */
-      transition: background 0.4s ease, color 0.4s ease;
-    }
-
-    a { color: white; text-decoration: none; transition: 0.3s ease; }
-    a:hover { color: #999; }
-
-    /* Sidebar */
-    .sidebar {
-      position: fixed;
-      top: 0; left: 0;
-      width: 260px;
+      overflow: hidden;
+      display: none; /* Hidden until verified */
       height: 100vh;
-      background: rgba(255,255,255,0.05);
-      backdrop-filter: blur(12px);
-      border-right: 1px solid rgba(255,255,255,0.1);
       display: flex;
       flex-direction: column;
+    }
+
+    header {
+      background: rgba(255,255,255,0.05);
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+      padding: 1rem 1.5rem;
+      display: flex;
       align-items: center;
-      padding: 2rem 1rem;
-      z-index: 200;
+      justify-content: space-between;
     }
 
-    .sidebar img {
-      width: 140px;
-      margin-bottom: 2rem;
-      filter: brightness(1.5);
+    header h1 {
+      font-size: 1.2rem;
+      font-weight: 600;
     }
 
-    .sidebar .button {
+    #logoutBtn {
       background: none;
       border: 1px solid #fff;
       color: #fff;
-      width: 100%;
-      padding: 0.8rem;
-      margin-bottom: 1rem;
+      padding: 0.4rem 0.8rem;
+      border-radius: 6px;
       cursor: pointer;
-      border-radius: 8px;
-      text-align: center;
       transition: all 0.3s ease;
     }
 
-    .sidebar .button:hover {
+    #logoutBtn:hover {
       background: #fff;
       color: #000;
-      transform: translateY(-2px);
-      box-shadow: 0 0 10px #fff;
     }
 
-    .profile {
-      position: fixed;
-      top: 20px;
-      right: 70px;
-      width: 45px;
-      height: 45px;
-      border-radius: 50%;
-      background: #fff;
-      color: #000;
-      font-weight: 600;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-      font-size: 1rem;
-      z-index: 300;
-    }
-
-    .theme-toggle {
-      position: fixed;
-      top: 22px;
-      right: 25px;
-      width: 40px;
-      height: 40px;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-      background: none;
-      border: 1px solid rgba(255,255,255,0.2);
-      z-index: 310;
-    }
-
-    .theme-toggle:hover {
-      background: rgba(255,255,255,0.1);
-    }
-
-    .theme-toggle svg {
-      width: 22px;
-      height: 22px;
-      fill: #fff;
-      transition: fill 0.4s ease;
-    }
-
-    body.light-mode .theme-toggle svg { fill: #000; }
-
-    main {
-      margin-left: 280px;
-      padding: 4rem 3rem;
-    }
-
-    h1 {
-      font-size: 2.5rem;
-      font-weight: 600;
-      margin-bottom: 1rem;
-    }
-
-    .lead {
-      font-size: 1.2rem;
-      color: #aaa;
-      max-width: 700px;
-      margin-bottom: 3rem;
-    }
-
-    .admin-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-      gap: 2rem;
-    }
-
-    .card {
-      background: rgba(255,255,255,0.05);
-      border-radius: 12px;
-      border: 1px solid rgba(255,255,255,0.1);
+    #chatContainer {
+      flex: 1;
       padding: 1.5rem;
+      display: flex;
+      flex-direction: column;
+      overflow-y: auto;
+      scroll-behavior: smooth;
+    }
+
+    .message {
+      max-width: 70%;
+      padding: 0.8rem 1rem;
+      border-radius: 10px;
+      margin-bottom: 0.8rem;
+      word-wrap: break-word;
+    }
+
+    .admin {
+      background: rgba(0, 255, 150, 0.15);
+      align-self: flex-end;
+      border: 1px solid rgba(0,255,150,0.3);
+    }
+
+    .system {
       text-align: center;
-      transition: transform 0.3s ease, box-shadow 0.3s ease;
+      opacity: 0.6;
+      font-size: 0.9rem;
+      margin: 1rem 0;
     }
 
-    .card:hover {
-      transform: translateY(-4px);
-      box-shadow: 0 0 12px rgba(255,255,255,0.2);
+    .user {
+      background: rgba(255,255,255,0.1);
+      border: 1px solid rgba(255,255,255,0.2);
+      align-self: flex-start;
     }
 
-    .card button {
-      margin-top: 1rem;
-      padding: 0.6rem 1rem;
+    #inputBar {
+      display: flex;
+      padding: 1rem;
+      border-top: 1px solid rgba(255,255,255,0.1);
+      background: rgba(255,255,255,0.03);
+    }
+
+    #messageInput {
+      flex: 1;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.1);
+      color: #fff;
+      padding: 0.8rem;
+      border-radius: 6px;
+      outline: none;
+      font-size: 1rem;
+    }
+
+    #sendBtn {
+      margin-left: 1rem;
+      background: #fff;
       border: none;
       border-radius: 6px;
-      background: #fff;
-      color: #000;
+      padding: 0 1.5rem;
+      font-weight: 600;
       cursor: pointer;
-      transition: background 0.3s ease;
-    }
-
-    .card button:hover { background: #ddd; }
-
-    body.light-mode {
-      background-color: #fff;
       color: #000;
+      transition: all 0.3s ease;
     }
 
-    body.light-mode .sidebar {
-      background: rgba(0,0,0,0.05);
-      border-right: 1px solid rgba(0,0,0,0.1);
+    #sendBtn:hover {
+      background: #ccc;
     }
 
-    body.light-mode .sidebar .button {
-      border: 1px solid #000;
-      color: #000;
-    }
-
-    body.light-mode .sidebar .button:hover {
-      background: #000;
-      color: #fff;
-    }
-
-    body.light-mode .profile {
-      background: #000;
-      color: #fff;
-    }
-
-    body.light-mode .card {
-      background: rgba(0,0,0,0.05);
-      border: 1px solid rgba(0,0,0,0.1);
+    @media (max-width: 600px) {
+      header h1 { font-size: 1rem; }
+      #sendBtn { padding: 0 1rem; }
     }
   </style>
 </head>
 
 <body>
-  <aside class="sidebar">
-    <img src="assets/bullride1055_v2.png" alt="Bullride Logo">
-    <button class="button" onclick="window.location.href='dashboard'">← Back to Dashboard</button>
-    <button class="button" id="logoutBtn">Sign Out</button>
-    <p style="margin-top:1rem;font-size:0.9rem;opacity:0.8;">Admin access only. Manage internal systems and monitor performance.</p>
-  </aside>
+  <header>
+    <h1>Admin Live Chat</h1>
+    <button id="logoutBtn">Sign Out</button>
+  </header>
 
-  <div class="profile" id="profileIcon">A</div>
-
-  <div class="theme-toggle" id="themeToggle">
-    <svg id="moonIcon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-      <path d="M21 12.79A9 9 0 0112.21 3 7 7 0 1021 12.79z"/>
-    </svg>
-    <svg id="sunIcon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" style="display:none;">
-      <path d="M12 18a6 6 0 100-12 6 6 0 000 12z"/>
-    </svg>
+  <div id="chatContainer">
+    <div class="system">Connecting to chat...</div>
   </div>
 
-  <main>
-    <h1>Admin Panel</h1>
-    <p class="lead">Welcome, Bullride administrator. Use these tools to manage users, monitor systems, and review analytics.</p>
-
-    <section class="admin-grid">
-      <div class="card">
-        <h3>User Management</h3>
-        <p>View, promote, or deactivate users.</p>
-        <button>Open</button>
-      </div>
-
-      <div class="card">
-        <h3>System Logs</h3>
-        <p>Monitor internal operations and request history.</p>
-        <button>View Logs</button>
-      </div>
-
-      <div class="card">
-        <h3>Analytics Dashboard</h3>
-        <p>Track platform growth and engagement metrics.</p>
-        <button>Open</button>
-      </div>
-
-      <div class="card">
-        <h3>Security Tools</h3>
-        <p>Manage admin keys, credentials, and audit trails.</p>
-        <button>Review</button>
-      </div>
-    </section>
-  </main>
+  <div id="inputBar">
+    <input type="text" id="messageInput" placeholder="Type your message..." />
+    <button id="sendBtn">Send</button>
+  </div>
 
   <script type="module">
     import { UserManager } from "https://cdn.jsdelivr.net/npm/oidc-client-ts@2.2.3/+esm";
@@ -253,13 +150,13 @@
       scope: "openid email phone profile"
     });
 
-    const body = document.body;
-    const profileIcon = document.getElementById("profileIcon");
-    const logoImg = document.querySelector(".sidebar img");
-    const themeToggle = document.getElementById("themeToggle");
-    const moonIcon = document.getElementById("moonIcon");
-    const sunIcon = document.getElementById("sunIcon");
+    const chatContainer = document.getElementById("chatContainer");
+    const input = document.getElementById("messageInput");
+    const sendBtn = document.getElementById("sendBtn");
 
+    let username = "Admin";
+
+    // Verify admin access
     async function verifyAdmin() {
       try {
         let user = await userManager.getUser();
@@ -271,13 +168,9 @@
           return;
         }
 
-        // Show initials
-        const fullName = user.profile.name || email;
-        const initials = fullName.split(" ").map(n => n[0]).join("").slice(0,2).toUpperCase();
-        profileIcon.textContent = initials;
-
-        // Show page
-        body.style.display = "block";
+        username = user.profile.name || email.split("@")[0];
+        document.body.style.display = "flex";
+        addSystemMessage(`Welcome, ${username}. You are connected.`);
       } catch (err) {
         console.error("Admin verification failed:", err);
         window.location.href = "https://bullride.us";
@@ -286,7 +179,38 @@
 
     verifyAdmin();
 
-    // --- Sign Out ---
+    // Local-only chat (replaceable with WebSocket backend)
+    function addMessage(sender, text, type = "user") {
+      const msg = document.createElement("div");
+      msg.className = `message ${type}`;
+      msg.innerHTML = `<strong>${sender}:</strong> ${text}`;
+      chatContainer.appendChild(msg);
+      chatContainer.scrollTop = chatContainer.scrollHeight;
+    }
+
+    function addSystemMessage(text) {
+      const msg = document.createElement("div");
+      msg.className = "system";
+      msg.textContent = text;
+      chatContainer.appendChild(msg);
+      chatContainer.scrollTop = chatContainer.scrollHeight;
+    }
+
+    sendBtn.addEventListener("click", sendMessage);
+    input.addEventListener("keypress", (e) => {
+      if (e.key === "Enter") sendMessage();
+    });
+
+    function sendMessage() {
+      const text = input.value.trim();
+      if (!text) return;
+      addMessage(username, text, "admin");
+      input.value = "";
+      // This is where you'd send the message to your backend:
+      // ws.send(JSON.stringify({ sender: username, text }));
+    }
+
+    // Sign out
     document.getElementById("logoutBtn").addEventListener("click", async () => {
       try {
         const user = await userManager.getUser();
@@ -297,30 +221,6 @@
         window.location.href = logoutUrl;
       } catch {
         window.location.href = "https://bullride.us";
-      }
-    });
-
-    // --- Theme Toggle ---
-    const savedTheme = localStorage.getItem("bullride-theme");
-    if (savedTheme === "light") {
-      body.classList.add("light-mode");
-      moonIcon.style.display = "none";
-      sunIcon.style.display = "block";
-      logoImg.src = "assets/bullride1055_v2_light.png";
-    }
-
-    themeToggle.addEventListener("click", () => {
-      const light = body.classList.toggle("light-mode");
-      if (light) {
-        moonIcon.style.display = "none";
-        sunIcon.style.display = "block";
-        logoImg.src = "assets/bullride1055_v2_light.png";
-        localStorage.setItem("bullride-theme", "light");
-      } else {
-        sunIcon.style.display = "none";
-        moonIcon.style.display = "block";
-        logoImg.src = "assets/bullride1055_v2.png";
-        localStorage.setItem("bullride-theme", "dark");
       }
     });
   </script>
