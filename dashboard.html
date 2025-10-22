@@ -216,6 +216,7 @@
 
   <script type="module">
     import { UserManager } from "https://cdn.jsdelivr.net/npm/oidc-client-ts@2.2.3/+esm";
+
     const userManager = new UserManager({
       authority: "https://cognito-idp.us-east-1.amazonaws.com/us-east-1_HPx82G5s7",
       client_id: "2l15ru0njbo72tv2skuceokjf2",
@@ -227,19 +228,23 @@
     document.getElementById("signOut").addEventListener("click", async () => {
       try {
         const user = await userManager.getUser();
+        const clientId = "2l15ru0njbo72tv2skuceokjf2";
+        const logoutUri = "https://bullride.us";
+        const logoutUrl = `https://auth.bullride.us/logout?client_id=${clientId}&logout_uri=${encodeURIComponent(logoutUri)}`;
+
         if (user) {
-          const logoutUrl = `https://auth.bullride.us/logout?client_id=2l15ru0njbo72tv2skuceokjf2&logout_uri=${encodeURIComponent("https://bullride.us")}`;
-          await userManager.removeUser();
-          window.location.href = logoutUrl;
-        } else {
-          window.location.href = "https://bullride.us";
+          await userManager.removeUser(); // Clear local tokens
         }
+
+        // Redirect to Cognito hosted logout endpoint to clear hosted UI cookies
+        window.location.href = logoutUrl;
       } catch (err) {
         console.error("Error signing out:", err);
         window.location.href = "https://bullride.us";
       }
     });
 
+    // Click animation pulse for squares
     document.querySelectorAll('.square').forEach(square => {
       square.addEventListener('click', () => {
         square.classList.add('clicked');
