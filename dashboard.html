@@ -378,6 +378,108 @@
 
   loadUser();
 
+  // inside your main JS (for single-page navigation)
+  const main = document.querySelector("main");
+
+  document.querySelector("#profileMenu button:nth-child(1)").addEventListener("click", async () => {
+    main.innerHTML = `
+      <h1>Settings</h1>
+      <p class="lead">Manage your account details and security settings.</p>
+
+      <section style="max-width:500px;">
+        <h3>Profile</h3>
+        <label>Name</label>
+        <input id="nameInput" type="text" placeholder="Full Name" style="width:100%;padding:8px;margin-bottom:12px;border-radius:6px;border:1px solid #555;background:#111;color:#fff;">
+        <button id="updateName" class="button">Update Name</button>
+
+        <hr style="margin:2rem 0;border-color:#333;">
+
+        <h3>Password</h3>
+        <label>Current Password</label>
+        <input id="oldPassword" type="password" placeholder="••••••••" style="width:100%;padding:8px;margin-bottom:10px;border-radius:6px;border:1px solid #555;background:#111;color:#fff;">
+        <label>New Password</label>
+        <input id="newPassword" type="password" placeholder="••••••••" style="width:100%;padding:8px;margin-bottom:10px;border-radius:6px;border:1px solid #555;background:#111;color:#fff;">
+        <label>Repeat New Password</label>
+        <input id="repeatPassword" type="password" placeholder="••••••••" style="width:100%;padding:8px;margin-bottom:12px;border-radius:6px;border:1px solid #555;background:#111;color:#fff;">
+        <button id="changePassword" class="button">Change Password</button>
+
+        <hr style="margin:2rem 0;border-color:#333;">
+
+        <h3>Two-Factor Authentication (2FA)</h3>
+        <p id="mfaStatus" style="margin-bottom:1rem;color:#aaa;">Checking status...</p>
+        <button id="toggleMFA" class="button">Enable 2FA</button>
+      </section>
+    `;
+
+    // Load Cognito user data
+    const user = await userManager.getUser();
+    if (user?.profile?.name) {
+      document.getElementById("nameInput").value = user.profile.name;
+    }
+
+    // --- Update Name ---
+    document.getElementById("updateName").addEventListener("click", async () => {
+      const newName = document.getElementById("nameInput").value.trim();
+      if (!newName) return alert("Please enter a name.");
+      try {
+        await fetch(`https://cognito-idp.us-east-1.amazonaws.com/`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/x-amz-json-1.1",
+            "X-Amz-Target": "AWSCognitoIdentityProviderService.UpdateUserAttributes",
+            "Authorization": user.id_token
+          },
+          body: JSON.stringify({
+            UserAttributes: [{ Name: "name", Value: newName }],
+            AccessToken: user.access_token
+          })
+        });
+        alert("Name updated successfully.");
+      } catch (err) {
+        console.error(err);
+        alert("Failed to update name.");
+      }
+    });
+
+    // --- Change Password ---
+    document.getElementById("changePassword").addEventListener("click", async () => {
+      const oldPass = document.getElementById("oldPassword").value;
+      const newPass = document.getElementById("newPassword").value;
+      const repeatPass = document.getElementById("repeatPassword").value;
+      if (!oldPass || !newPass || !repeatPass) return alert("Please fill all fields.");
+      if (newPass !== repeatPass) return alert("New passwords do not match.");
+
+      try {
+        await fetch("https://cognito-idp.us-east-1.amazonaws.com/", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/x-amz-json-1.1",
+            "X-Amz-Target": "AWSCognitoIdentityProviderService.ChangePassword",
+            "Authorization": user.id_token
+          },
+          body: JSON.stringify({
+            PreviousPassword: oldPass,
+            ProposedPassword: newPass,
+            AccessToken: user.access_token
+          })
+        });
+        alert("Password changed successfully.");
+      } catch (err) {
+        console.error(err);
+        alert("Failed to change password.");
+      }
+    });
+
+    // --- 2FA (TOTP / SMS) Placeholder ---
+    document.getElementById("toggleMFA").addEventListener("click", async () => {
+      alert("2FA configuration to be added (requires Cognito Admin setup).");
+    });
+
+    // Optionally check current MFA status
+    document.getElementById("mfaStatus").textContent = "2FA is currently disabled.";
+  });
+
+
   // Sign out
   document.getElementById("signOut").addEventListener("click", async () => {
     try {
