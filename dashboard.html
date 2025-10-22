@@ -37,9 +37,7 @@
       z-index: 200;
     }
 
-    .sidebar.hidden {
-      transform: translateX(-100%);
-    }
+    .sidebar.hidden { transform: translateX(-100%); }
 
     .sidebar img {
       width: 140px;
@@ -95,14 +93,11 @@
       transition: transform 0.3s ease, background 0.3s ease;
     }
 
-    .sidebar.hidden ~ .toggle-btn .toggle-dot { transform: translateX(0); }
-    .sidebar:not(.hidden) ~ .toggle-btn .toggle-dot { transform: translateX(4px); }
-
     /* Profile icon */
     .profile {
       position: fixed;
       top: 20px;
-      right: 30px;
+      right: 70px;
       width: 45px;
       height: 45px;
       border-radius: 50%;
@@ -119,6 +114,39 @@
     }
 
     .profile:hover { transform: scale(1.05); }
+
+    /* Theme icon toggle (sun/moon) */
+    .theme-toggle {
+      position: fixed;
+      top: 22px;
+      right: 25px;
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      background: none;
+      border: 1px solid rgba(255,255,255,0.2);
+      transition: all 0.3s ease;
+      z-index: 310;
+    }
+
+    .theme-toggle:hover {
+      background: rgba(255,255,255,0.1);
+    }
+
+    .theme-toggle svg {
+      width: 22px;
+      height: 22px;
+      fill: #fff;
+      transition: fill 0.4s ease;
+    }
+
+    body.light-mode .theme-toggle svg {
+      fill: #000;
+    }
 
     /* Profile dropdown */
     .profile-menu {
@@ -151,9 +179,7 @@
       transition: background 0.3s ease;
     }
 
-    .profile-menu button:hover {
-      background: rgba(255,255,255,0.15);
-    }
+    .profile-menu button:hover { background: rgba(255,255,255,0.15); }
 
     /* Main content */
     main {
@@ -235,19 +261,13 @@
 
     /* MOBILE */
     @media (max-width: 768px) {
-      .sidebar {
-        transform: translateX(-100%);
-        width: 260px;
-      }
+      .sidebar { transform: translateX(-100%); width: 260px; }
       .sidebar.active { transform: translateX(0); }
-      main {
-        margin-left: 0;
-        padding: 2rem;
-      }
+      main { margin-left: 0; padding: 2rem; }
       .toggle-btn { top: 15px; left: 15px; }
     }
 
-    /* 🌗 LIGHT MODE */
+    /* LIGHT MODE */
     body.light-mode {
       background-color: #fff;
       color: #000;
@@ -291,13 +311,8 @@
       background: #000;
     }
 
-    body.light-mode .toggle-btn {
-      background: #000;
-    }
-
-    body.light-mode .toggle-dot {
-      background: #fff;
-    }
+    body.light-mode .toggle-btn { background: #000; }
+    body.light-mode .toggle-dot { background: #fff; }
   </style>
 
 </head>
@@ -315,6 +330,18 @@
   </div>
 
   <div class="profile" id="profileIcon">U</div>
+  <div class="theme-toggle" id="themeToggle">
+    <!-- Moon (default dark) -->
+    <svg id="moonIcon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+      <path d="M21 12.79A9 9 0 0112.21 3 7 7 0 1021 12.79z"/>
+    </svg>
+
+    <!-- Sun (light mode) -->
+    <svg id="sunIcon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" style="display:none;">
+      <path d="M12 18a6 6 0 100-12 6 6 0 000 12zm0 4a1 1 0 010-2h0a1 1 0 010 2zm0-20a1 1 0 010-2h0a1 1 0 010 2zm8.49 17.49a1 1 0 010-1.41h0a1 1 0 011.41 1.41h0a1 1 0 01-1.41 0zM3.51 4.51a1 1 0 010-1.41h0a1 1 0 011.41 1.41h0a1 1 0 01-1.41 0z"/>
+    </svg>
+  </div>
+
   <div class="profile-menu" id="profileMenu">
     <button>Settings</button>
     <button id="signOut">Sign Out</button>
@@ -360,147 +387,170 @@
     </section>
   </main>
 
-  <script type="module">
-  import { UserManager } from "https://cdn.jsdelivr.net/npm/oidc-client-ts@2.2.3/+esm";
+    <script type="module">
+    import { UserManager } from "https://cdn.jsdelivr.net/npm/oidc-client-ts@2.2.3/+esm";
 
-  const userManager = new UserManager({
-    authority: "https://cognito-idp.us-east-1.amazonaws.com/us-east-1_HPx82G5s7",
-    client_id: "2l15ru0njbo72tv2skuceokjf2",
-    redirect_uri: "https://bullride.us/dashboard",
-    response_type: "code",
-    scope: "openid email phone profile"
-  });
+    const userManager = new UserManager({
+      authority: "https://cognito-idp.us-east-1.amazonaws.com/us-east-1_HPx82G5s7",
+      client_id: "2l15ru0njbo72tv2skuceokjf2",
+      redirect_uri: "https://bullride.us/dashboard",
+      response_type: "code",
+      scope: "openid email phone profile"
+    });
 
-  const sidebar = document.getElementById("sidebar");
-  const toggleSidebar = document.getElementById("toggleSidebar");
-  const profileIcon = document.getElementById("profileIcon");
-  const profileMenu = document.getElementById("profileMenu");
-
-  // Toggle sidebar
-  toggleSidebar.addEventListener("click", () => {
-    if (window.innerWidth <= 768) {
-      sidebar.classList.toggle("active");
-    } else {
-      sidebar.classList.toggle("hidden");
-    }
-  });
-
-  // Toggle profile menu
-  profileIcon.addEventListener("click", (e) => {
-    e.stopPropagation();
-    profileMenu.classList.toggle("active");
-  });
-
-  // Close profile menu when clicking outside
-  document.addEventListener("click", (e) => {
-    if (!profileMenu.contains(e.target) && !profileIcon.contains(e.target)) {
-      profileMenu.classList.remove("active");
-    }
-  });
-
-  // Load user + set initials
-  async function loadUser() {
-    try {
-      let user = await userManager.getUser();
-      if (!user) user = await userManager.signinRedirectCallback();
-      if (user && user.profile) {
-        const fullName = user.profile.name || user.profile.given_name || user.profile.email || "User";
-        const names = fullName.split(" ");
-        const initials = (names[0]?.[0] || "") + (names[1]?.[0] || "");
-        document.getElementById("profileIcon").textContent = initials.toUpperCase();
-      }
-    } catch (err) {
-      console.error("Error loading user:", err);
-    }
-  }
-
-  loadUser();
-
-  // --- SETTINGS PAGE (Profile Display + Theme Switch) ---
-  document.querySelector("#profileMenu button:nth-child(1)").addEventListener("click", async () => {
-    const main = document.querySelector("main");
-    main.innerHTML = `
-      <h1>Settings</h1>
-      <p class="lead">View your account information and preferences.</p>
-
-      <section style="max-width:500px;">
-        <div style="background:rgba(255,255,255,0.05);padding:20px;border-radius:12px;border:1px solid rgba(255,255,255,0.1);">
-          <h3 style="margin-bottom:1rem;">Profile Information</h3>
-          <p><strong>Username:</strong> <span id="displayUsername">Loading...</span></p>
-          <p><strong>Name:</strong> <span id="displayName">Loading...</span></p>
-          <p><strong>Phone Number:</strong> <span id="displayPhone">Loading...</span></p>
-          <p><strong>Email:</strong> <span id="displayEmail">Loading...</span>
-            <span id="emailVerified" style="font-size:0.9rem;margin-left:8px;color:#aaa;">(checking...)</span></p>
-        </div>
-
-        <hr style="margin:2rem 0;border-color:#333;">
-
-        <div style="display:flex;align-items:center;gap:10px;">
-          <label for="themeSwitch" style="font-weight:500;">Dark / Light Mode</label>
-          <input type="checkbox" id="themeSwitch" style="width:50px;height:25px;accent-color:white;cursor:pointer;">
-        </div>
-      </section>
-    `;
-
-    // Fetch Cognito user info
-    try {
-      const user = await userManager.getUser();
-
-      // Display basic info
-      document.getElementById("displayUsername").textContent = user?.profile?.preferred_username || user?.profile?.username || "(Not available)";
-      document.getElementById("displayName").textContent = user?.profile?.name || "(Not provided)";
-      document.getElementById("displayPhone").textContent = user?.profile?.phone_number || "(Not provided)";
-      document.getElementById("displayEmail").textContent = user?.profile?.email || "(Not provided)";
-
-      // Email verification status
-      if (user?.profile?.email_verified === true || user?.profile?.email_verified === "true") {
-        document.getElementById("emailVerified").textContent = "(verified)";
-        document.getElementById("emailVerified").style.color = "lightgreen";
-      } else {
-        document.getElementById("emailVerified").textContent = "(unverified)";
-        document.getElementById("emailVerified").style.color = "orange";
-      }
-    } catch (err) {
-      console.error("Error loading user info:", err);
-      document.querySelector("section").innerHTML = "<p style='color:red;'>Failed to load user data.</p>";
-    }
-
-    // --- Dark/Light Mode Toggle ---
-    const themeSwitch = document.getElementById("themeSwitch");
+    const sidebar = document.getElementById("sidebar");
+    const toggleSidebar = document.getElementById("toggleSidebar");
+    const profileIcon = document.getElementById("profileIcon");
+    const profileMenu = document.getElementById("profileMenu");
+    const themeToggle = document.getElementById("themeToggle");
+    const moonIcon = document.getElementById("moonIcon");
+    const sunIcon = document.getElementById("sunIcon");
+    const logoImg = document.querySelector(".sidebar img");
     const body = document.body;
 
-    // Load last chosen mode
+    // --- Sidebar toggle ---
+    toggleSidebar.addEventListener("click", () => {
+      if (window.innerWidth <= 768) sidebar.classList.toggle("active");
+      else sidebar.classList.toggle("hidden");
+    });
+
+    // --- Profile menu toggle ---
+    profileIcon.addEventListener("click", (e) => {
+      e.stopPropagation();
+      profileMenu.classList.toggle("active");
+    });
+
+    // --- Close profile menu when clicking outside ---
+    document.addEventListener("click", (e) => {
+      if (!profileMenu.contains(e.target) && !profileIcon.contains(e.target)) {
+        profileMenu.classList.remove("active");
+      }
+    });
+
+    // --- Load Cognito user and set initials ---
+    async function loadUser() {
+      try {
+        let user = await userManager.getUser();
+        if (!user) user = await userManager.signinRedirectCallback();
+        if (user && user.profile) {
+          const fullName = user.profile.name || user.profile.given_name || user.profile.email || "User";
+          const names = fullName.split(" ");
+          const initials = (names[0]?.[0] || "") + (names[1]?.[0] || "");
+          document.getElementById("profileIcon").textContent = initials.toUpperCase();
+        }
+      } catch (err) {
+        console.error("Error loading user:", err);
+      }
+    }
+
+    loadUser();
+
+    // --- THEME TOGGLE (Dark / Light Mode) ---
     const savedTheme = localStorage.getItem("bullride-theme");
     if (savedTheme === "light") {
       body.classList.add("light-mode");
-      themeSwitch.checked = true;
+      moonIcon.style.display = "none";
+      sunIcon.style.display = "block";
+      logoImg.src = "assets/bullride1055_v2_light.png";
+    } else {
+      logoImg.src = "assets/bullride1055_v2.png";
     }
 
-    themeSwitch.addEventListener("change", () => {
-      if (themeSwitch.checked) {
-        body.classList.add("light-mode");
+    themeToggle.addEventListener("click", () => {
+      const light = body.classList.toggle("light-mode");
+      if (light) {
+        moonIcon.style.display = "none";
+        sunIcon.style.display = "block";
+        logoImg.src = "assets/bullride1055_v2_light.png";
         localStorage.setItem("bullride-theme", "light");
       } else {
-        body.classList.remove("light-mode");
+        sunIcon.style.display = "none";
+        moonIcon.style.display = "block";
+        logoImg.src = "assets/bullride1055_v2.png";
         localStorage.setItem("bullride-theme", "dark");
       }
     });
-  });
 
+    // --- SETTINGS PAGE ---
+    document.querySelector("#profileMenu button:nth-child(1)").addEventListener("click", async () => {
+      const main = document.querySelector("main");
+      main.innerHTML = `
+        <h1>Settings</h1>
+        <p class="lead">View your account information and preferences.</p>
 
-  // Sign out
-  document.getElementById("signOut").addEventListener("click", async () => {
-    try {
-      const user = await userManager.getUser();
-      const clientId = "2l15ru0njbo72tv2skuceokjf2";
-      const logoutUri = "https://bullride.us";
-      const logoutUrl = `https://auth.bullride.us/logout?client_id=${clientId}&logout_uri=${encodeURIComponent(logoutUri)}`;
-      if (user) await userManager.removeUser();
-      window.location.href = logoutUrl;
-    } catch {
-      window.location.href = "https://bullride.us";
-    }
-  });
+        <section style="max-width:500px;">
+          <div style="background:rgba(255,255,255,0.05);padding:20px;border-radius:12px;border:1px solid rgba(255,255,255,0.1);">
+            <h3 style="margin-bottom:1rem;">Profile Information</h3>
+            <p><strong>Username:</strong> <span id="displayUsername">Loading...</span></p>
+            <p><strong>Name:</strong> <span id="displayName">Loading...</span></p>
+            <p><strong>Phone Number:</strong> <span id="displayPhone">Loading...</span></p>
+            <p><strong>Email:</strong> <span id="displayEmail">Loading...</span>
+              <span id="emailVerified" style="font-size:0.9rem;margin-left:8px;color:#aaa;">(checking...)</span></p>
+          </div>
+        </section>
+      `;
+
+      try {
+        const user = await userManager.getUser();
+
+        document.getElementById("displayUsername").textContent = user?.profile?.preferred_username || user?.profile?.username || "(Not available)";
+        document.getElementById("displayName").textContent = user?.profile?.name || "(Not provided)";
+        document.getElementById("displayPhone").textContent = user?.profile?.phone_number || "(Not provided)";
+        document.getElementById("displayEmail").textContent = user?.profile?.email || "(Not provided)";
+
+        if (user?.profile?.email_verified === true || user?.profile?.email_verified === "true") {
+          document.getElementById("emailVerified").textContent = "(verified)";
+          document.getElementById("emailVerified").style.color = "lightgreen";
+        } else {
+          document.getElementById("emailVerified").textContent = "(unverified)";
+          document.getElementById("emailVerified").style.color = "orange";
+        }
+      } catch (err) {
+        console.error("Error loading user info:", err);
+        document.querySelector("section").innerHTML = "<p style='color:red;'>Failed to load user data.</p>";
+      }
+    });
+
+    // --- DASHBOARD BUTTON (reload main view) ---
+    document.getElementById("dashboardBtn").addEventListener("click", () => {
+      const main = document.querySelector("main");
+      main.innerHTML = `
+        <h1>Dashboard</h1>
+        <p class="lead">Explore and manage your investments — your personalized ETF hub.</p>
+        <section class="grid">
+          <div class="cell">
+            <div class="square">${"<div></div>".repeat(9)}</div>
+            <h5>Your ETFs</h5>
+          </div>
+          <div class="cell">
+            <div class="square">${"<div></div>".repeat(9)}</div>
+            <h5>Discover</h5>
+          </div>
+          <div class="cell">
+            <div class="square">${"<div></div>".repeat(9)}</div>
+            <h5>Analytics</h5>
+          </div>
+          <div class="cell">
+            <div class="square">${"<div></div>".repeat(9)}</div>
+            <h5>Performance</h5>
+          </div>
+        </section>
+      `;
+    });
+
+    // --- SIGN OUT ---
+    document.getElementById("signOut").addEventListener("click", async () => {
+      try {
+        const user = await userManager.getUser();
+        const clientId = "2l15ru0njbo72tv2skuceokjf2";
+        const logoutUri = "https://bullride.us";
+        const logoutUrl = `https://auth.bullride.us/logout?client_id=${clientId}&logout_uri=${encodeURIComponent(logoutUri)}`;
+        if (user) await userManager.removeUser();
+        window.location.href = logoutUrl;
+      } catch {
+        window.location.href = "https://bullride.us";
+      }
+    });
   </script>
 </body>
 </html>
