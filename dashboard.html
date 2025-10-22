@@ -409,9 +409,19 @@
     // --- Redirect unauthenticated users to home ---
     (async () => {
       try {
-        const user = await userManager.getUser();
+        let user = await userManager.getUser();
+
+        // if there's no local session, try to complete a Cognito login callback
         if (!user) {
-          // no valid session — redirect to home
+          try {
+            user = await userManager.signinRedirectCallback();
+          } catch {
+            // not coming from a redirect, so just no session yet
+          }
+        }
+
+        // still no user → redirect to home
+        if (!user) {
           window.location.href = "https://bullride.us";
           return;
         }
@@ -420,6 +430,7 @@
         window.location.href = "https://bullride.us";
       }
     })();
+
 
     const sidebar = document.getElementById("sidebar");
     const toggleSidebar = document.getElementById("toggleSidebar");
