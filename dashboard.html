@@ -13,6 +13,7 @@
       color: #fff;
       overflow-x: hidden;
       line-height: 1.6;
+      transition: background 0.4s ease, color 0.4s ease;
     }
 
     a { color: white; text-decoration: none; transition: 0.3s ease; }
@@ -32,7 +33,7 @@
       align-items: center;
       padding: 2rem 1rem;
       transform: translateX(0);
-      transition: transform 0.4s ease;
+      transition: transform 0.4s ease, background 0.4s ease, border 0.4s ease;
       z-index: 200;
     }
 
@@ -44,6 +45,7 @@
       width: 140px;
       margin-bottom: 2rem;
       filter: brightness(1.5);
+      transition: filter 0.4s ease;
     }
 
     .sidebar .button {
@@ -83,25 +85,18 @@
       transition: transform 0.3s ease, background 0.3s ease;
     }
 
-    .toggle-btn:hover {
-      transform: scale(1.1);
-    }
+    .toggle-btn:hover { transform: scale(1.1); }
 
     .toggle-dot {
       width: 10px;
       height: 10px;
       background: #000;
       border-radius: 50%;
-      transition: transform 0.3s ease;
+      transition: transform 0.3s ease, background 0.3s ease;
     }
 
-    .sidebar.hidden ~ .toggle-btn .toggle-dot {
-      transform: translateX(0);
-    }
-
-    .sidebar:not(.hidden) ~ .toggle-btn .toggle-dot {
-      transform: translateX(4px);
-    }
+    .sidebar.hidden ~ .toggle-btn .toggle-dot { transform: translateX(0); }
+    .sidebar:not(.hidden) ~ .toggle-btn .toggle-dot { transform: translateX(4px); }
 
     /* Profile icon */
     .profile {
@@ -120,12 +115,10 @@
       cursor: pointer;
       font-size: 1rem;
       z-index: 300;
-      transition: transform 0.3s ease;
+      transition: transform 0.3s ease, background 0.4s ease, color 0.4s ease;
     }
 
-    .profile:hover {
-      transform: scale(1.05);
-    }
+    .profile:hover { transform: scale(1.05); }
 
     /* Profile dropdown */
     .profile-menu {
@@ -142,11 +135,10 @@
       width: 180px;
       animation: fadeIn 0.3s ease forwards;
       z-index: 400;
+      transition: background 0.4s ease, border 0.4s ease;
     }
 
-    .profile-menu.active {
-      display: flex;
-    }
+    .profile-menu.active { display: flex; }
 
     .profile-menu button {
       background: none;
@@ -167,12 +159,10 @@
     main {
       margin-left: 280px;
       padding: 4rem 3rem;
-      transition: margin-left 0.4s ease;
+      transition: margin-left 0.4s ease, background 0.4s ease, color 0.4s ease;
     }
 
-    .sidebar.hidden ~ main {
-      margin-left: 0;
-    }
+    .sidebar.hidden ~ main { margin-left: 0; }
 
     h1 {
       font-size: 2.8rem;
@@ -249,19 +239,67 @@
         transform: translateX(-100%);
         width: 260px;
       }
-      .sidebar.active {
-        transform: translateX(0);
-      }
+      .sidebar.active { transform: translateX(0); }
       main {
         margin-left: 0;
         padding: 2rem;
       }
-      .toggle-btn {
-        top: 15px;
-        left: 15px;
-      }
+      .toggle-btn { top: 15px; left: 15px; }
+    }
+
+    /* 🌗 LIGHT MODE */
+    body.light-mode {
+      background-color: #fff;
+      color: #000;
+    }
+
+    body.light-mode .sidebar {
+      background: rgba(0,0,0,0.05);
+      border-right: 1px solid rgba(0,0,0,0.1);
+    }
+
+    body.light-mode .sidebar .button {
+      border: 1px solid #000;
+      color: #000;
+    }
+
+    body.light-mode .sidebar .button:hover {
+      background: #000;
+      color: #fff;
+      box-shadow: 0 0 10px rgba(0,0,0,0.3);
+    }
+
+    body.light-mode .profile {
+      background: #000;
+      color: #fff;
+    }
+
+    body.light-mode .profile-menu {
+      background: rgba(0,0,0,0.05);
+      border: 1px solid rgba(0,0,0,0.2);
+    }
+
+    body.light-mode .profile-menu button {
+      color: #000;
+    }
+
+    body.light-mode .profile-menu button:hover {
+      background: rgba(0,0,0,0.1);
+    }
+
+    body.light-mode .square div {
+      background: #000;
+    }
+
+    body.light-mode .toggle-btn {
+      background: #000;
+    }
+
+    body.light-mode .toggle-dot {
+      background: #fff;
     }
   </style>
+
 </head>
 
 <body>
@@ -377,6 +415,78 @@
   }
 
   loadUser();
+
+  // --- SETTINGS PAGE (Profile Display + Theme Switch) ---
+  document.querySelector("#profileMenu button:nth-child(1)").addEventListener("click", async () => {
+    const main = document.querySelector("main");
+    main.innerHTML = `
+      <h1>Settings</h1>
+      <p class="lead">View your account information and preferences.</p>
+
+      <section style="max-width:500px;">
+        <div style="background:rgba(255,255,255,0.05);padding:20px;border-radius:12px;border:1px solid rgba(255,255,255,0.1);">
+          <h3 style="margin-bottom:1rem;">Profile Information</h3>
+          <p><strong>Username:</strong> <span id="displayUsername">Loading...</span></p>
+          <p><strong>Name:</strong> <span id="displayName">Loading...</span></p>
+          <p><strong>Phone Number:</strong> <span id="displayPhone">Loading...</span></p>
+          <p><strong>Email:</strong> <span id="displayEmail">Loading...</span>
+            <span id="emailVerified" style="font-size:0.9rem;margin-left:8px;color:#aaa;">(checking...)</span></p>
+        </div>
+
+        <hr style="margin:2rem 0;border-color:#333;">
+
+        <div style="display:flex;align-items:center;gap:10px;">
+          <label for="themeSwitch" style="font-weight:500;">Dark / Light Mode</label>
+          <input type="checkbox" id="themeSwitch" style="width:50px;height:25px;accent-color:white;cursor:pointer;">
+        </div>
+      </section>
+    `;
+
+    // Fetch Cognito user info
+    try {
+      const user = await userManager.getUser();
+
+      // Display basic info
+      document.getElementById("displayUsername").textContent = user?.profile?.preferred_username || user?.profile?.username || "(Not available)";
+      document.getElementById("displayName").textContent = user?.profile?.name || "(Not provided)";
+      document.getElementById("displayPhone").textContent = user?.profile?.phone_number || "(Not provided)";
+      document.getElementById("displayEmail").textContent = user?.profile?.email || "(Not provided)";
+
+      // Email verification status
+      if (user?.profile?.email_verified === true || user?.profile?.email_verified === "true") {
+        document.getElementById("emailVerified").textContent = "(verified)";
+        document.getElementById("emailVerified").style.color = "lightgreen";
+      } else {
+        document.getElementById("emailVerified").textContent = "(unverified)";
+        document.getElementById("emailVerified").style.color = "orange";
+      }
+    } catch (err) {
+      console.error("Error loading user info:", err);
+      document.querySelector("section").innerHTML = "<p style='color:red;'>Failed to load user data.</p>";
+    }
+
+    // --- Dark/Light Mode Toggle ---
+    const themeSwitch = document.getElementById("themeSwitch");
+    const body = document.body;
+
+    // Load last chosen mode
+    const savedTheme = localStorage.getItem("bullride-theme");
+    if (savedTheme === "light") {
+      body.classList.add("light-mode");
+      themeSwitch.checked = true;
+    }
+
+    themeSwitch.addEventListener("change", () => {
+      if (themeSwitch.checked) {
+        body.classList.add("light-mode");
+        localStorage.setItem("bullride-theme", "light");
+      } else {
+        body.classList.remove("light-mode");
+        localStorage.setItem("bullride-theme", "dark");
+      }
+    });
+  });
+
 
   // Sign out
   document.getElementById("signOut").addEventListener("click", async () => {
