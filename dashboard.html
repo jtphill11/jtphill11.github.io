@@ -1,5 +1,4 @@
 <!doctype html>
-
 <html lang="en">
 <head>
   <meta charset="utf-8" />
@@ -19,6 +18,7 @@
     a { color: white; text-decoration: none; transition: 0.3s ease; }
     a:hover { color: #999; }
 
+    /* Sidebar */
     .sidebar {
       position: fixed;
       top: 0; left: 0;
@@ -31,13 +31,25 @@
       flex-direction: column;
       align-items: center;
       padding: 2rem 1rem;
-      animation: slideIn 1s ease forwards;
+      transform: translateX(0);
+      transition: transform 0.4s ease, width 0.3s ease;
+      z-index: 100;
+    }
+
+    .sidebar.collapsed {
+      transform: translateX(-190px);
+      width: 70px;
     }
 
     .sidebar img {
       width: 140px;
       margin-bottom: 2rem;
       filter: brightness(1.5);
+      transition: opacity 0.3s ease;
+    }
+
+    .sidebar.collapsed img {
+      opacity: 0;
     }
 
     .sidebar .button {
@@ -50,6 +62,7 @@
       cursor: pointer;
       transition: all 0.3s ease;
       border-radius: 8px;
+      text-align: center;
     }
 
     .sidebar .button:hover {
@@ -59,16 +72,36 @@
       box-shadow: 0 0 10px #fff;
     }
 
-    .sidebar p {
-      font-size: 0.9rem;
-      color: #aaa;
-      text-align: center;
+    .toggle-btn {
+      position: absolute;
+      top: 15px;
+      right: -15px;
+      background: #fff;
+      color: #000;
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      font-weight: bold;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      cursor: pointer;
+      z-index: 200;
+      transition: transform 0.3s ease;
+    }
+
+    .toggle-btn:hover {
+      transform: scale(1.1);
     }
 
     main {
       margin-left: 280px;
       padding: 4rem 3rem;
-      animation: fadeIn 1.2s ease forwards;
+      transition: margin-left 0.4s ease;
+    }
+
+    .collapsed ~ main {
+      margin-left: 100px;
     }
 
     h1 {
@@ -82,6 +115,72 @@
       color: #aaa;
       max-width: 700px;
       margin-bottom: 3rem;
+    }
+
+    /* Profile icon */
+    .profile {
+      position: fixed;
+      top: 20px;
+      right: 30px;
+      width: 45px;
+      height: 45px;
+      border-radius: 50%;
+      background: #fff;
+      color: #000;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 1rem;
+      z-index: 300;
+      transition: transform 0.3s ease;
+    }
+
+    .profile:hover {
+      transform: scale(1.05);
+    }
+
+    .profile-menu {
+      position: absolute;
+      top: 70px;
+      right: 30px;
+      background: rgba(255,255,255,0.1);
+      border: 1px solid rgba(255,255,255,0.2);
+      border-radius: 10px;
+      backdrop-filter: blur(12px);
+      overflow: hidden;
+      display: none;
+      flex-direction: column;
+      width: 180px;
+      animation: fadeIn 0.3s ease forwards;
+    }
+
+    .profile-menu.active {
+      display: flex;
+    }
+
+    .profile-menu button {
+      background: none;
+      border: none;
+      color: #fff;
+      padding: 0.9rem;
+      text-align: left;
+      width: 100%;
+      cursor: pointer;
+      transition: background 0.3s ease;
+    }
+
+    .profile-menu button:hover {
+      background: rgba(255,255,255,0.15);
+    }
+
+    .close-profile {
+      text-align: right;
+      padding: 0.5rem 1rem;
+      font-size: 1.2rem;
+      cursor: pointer;
+      color: #aaa;
     }
 
     .grid {
@@ -100,18 +199,6 @@
     .cell:hover {
       transform: translateY(-5px);
       opacity: 1;
-    }
-
-    h5 { font-weight: 500; letter-spacing: 0.5px; }
-
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(20px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-
-    @keyframes slideIn {
-      from { transform: translateX(-100px); opacity: 0; }
-      to { transform: translateX(0); opacity: 1; }
     }
 
     .square {
@@ -141,75 +228,90 @@
     }
 
     .square:hover {
-      transform: scale(1.25) rotate(0deg);
+      transform: scale(1.25);
       gap: 6px;
       box-shadow: 0 0 25px rgba(255,255,255,0.6);
     }
 
-    .square div:hover {
-      transform: scale(1.1);
-      opacity: 0.85;
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(-10px); }
+      to { opacity: 1; transform: translateY(0); }
     }
 
-    .square.clicked {
-      transform: scale(1.05);
-      box-shadow: 0 0 30px rgba(255,255,255,0.9);
-    }
-
+    /* MOBILE */
     @media (max-width: 768px) {
-      .sidebar { display: none; }
-      main { margin: 0; padding: 2rem; }
+      .sidebar {
+        transform: translateX(-100%);
+        width: 260px;
+      }
+      .sidebar.active {
+        transform: translateX(0);
+      }
+      main {
+        margin-left: 0;
+        padding: 2rem;
+      }
+      .toggle-btn {
+        right: 15px;
+      }
     }
   </style>
-
 </head>
 
 <body>
   <aside class="sidebar">
+    <div class="toggle-btn" id="toggleSidebar">&lt;</div>
     <img src="assets/bullride1055_v2.png" alt="Bullride Logo">
-    <button class="button" id="signOut">Sign Out</button>
+    <button class="button" id="dashboardBtn">Dashboard</button>
+    <button class="button" id="exploreBtn">Explore</button>
     <p>Welcome to your dashboard. Manage your ETFs, explore markets, and discover trending baskets.</p>
   </aside>
+
+  <div class="profile" id="profileIcon">U</div>
+  <div class="profile-menu" id="profileMenu">
+    <div class="close-profile" id="closeProfile">×</div>
+    <button>Settings</button>
+    <button id="signOut">Sign Out</button>
+  </div>
 
   <main>
     <h1>Dashboard</h1>
     <p class="lead">Explore and manage your investments — your personalized ETF hub.</p>
 
-<section class="grid">
-  <div class="cell">
-    <div class="square">
-      <div></div><div></div><div></div>
-      <div></div><div></div><div></div>
-      <div></div><div></div><div></div>
-    </div>
-    <h5>Your ETFs</h5>
-  </div>
-  <div class="cell">
-    <div class="square">
-      <div></div><div></div><div></div>
-      <div></div><div></div><div></div>
-      <div></div><div></div><div></div>
-    </div>
-    <h5>Discover</h5>
-  </div>
-  <div class="cell">
-    <div class="square">
-      <div></div><div></div><div></div>
-      <div></div><div></div><div></div>
-      <div></div><div></div><div></div>
-    </div>
-    <h5>Analytics</h5>
-  </div>
-  <div class="cell">
-    <div class="square">
-      <div></div><div></div><div></div>
-      <div></div><div></div><div></div>
-      <div></div><div></div><div></div>
-    </div>
-    <h5>Performance</h5>
-  </div>
-</section>
-
+    <section class="grid">
+      <div class="cell">
+        <div class="square">
+          <div></div><div></div><div></div>
+          <div></div><div></div><div></div>
+          <div></div><div></div><div></div>
+        </div>
+        <h5>Your ETFs</h5>
+      </div>
+      <div class="cell">
+        <div class="square">
+          <div></div><div></div><div></div>
+          <div></div><div></div><div></div>
+          <div></div><div></div><div></div>
+        </div>
+        <h5>Discover</h5>
+      </div>
+      <div class="cell">
+        <div class="square">
+          <div></div><div></div><div></div>
+          <div></div><div></div><div></div>
+          <div></div><div></div><div></div>
+        </div>
+        <h5>Analytics</h5>
+      </div>
+      <div class="cell">
+        <div class="square">
+          <div></div><div></div><div></div>
+          <div></div><div></div><div></div>
+          <div></div><div></div><div></div>
+        </div>
+        <h5>Performance</h5>
+      </div>
+    </section>
   </main>
 
   <script type="module">
@@ -223,32 +325,39 @@
     scope: "openid email phone profile"
   });
 
+  const sidebar = document.querySelector(".sidebar");
+  const toggleSidebar = document.getElementById("toggleSidebar");
+  const profileIcon = document.getElementById("profileIcon");
+  const profileMenu = document.getElementById("profileMenu");
+  const closeProfile = document.getElementById("closeProfile");
+
+  toggleSidebar.addEventListener("click", () => {
+    if (window.innerWidth <= 768) {
+      sidebar.classList.toggle("active");
+      toggleSidebar.textContent = sidebar.classList.contains("active") ? ">" : "<";
+    } else {
+      sidebar.classList.toggle("collapsed");
+      toggleSidebar.textContent = sidebar.classList.contains("collapsed") ? ">" : "<";
+    }
+  });
+
+  profileIcon.addEventListener("click", () => {
+    profileMenu.classList.toggle("active");
+  });
+  closeProfile.addEventListener("click", () => {
+    profileMenu.classList.remove("active");
+  });
+
   async function loadUser() {
     try {
       let user = await userManager.getUser();
-
-      // If there's no user yet (first load), try to complete login redirect
-      if (!user) {
-        user = await userManager.signinRedirectCallback();
-      }
+      if (!user) user = await userManager.signinRedirectCallback();
 
       if (user && user.profile) {
-        // Extract first name safely
-        let name = user.profile.given_name || user.profile.name || user.profile.email || "User";
-        if (name.includes(" ")) {
-          name = name.split(" ")[0]; // Take only first name if full name provided
-        }
-
-        // Create greeting element
-        const greeting = document.createElement("h2");
-        greeting.textContent = `Hello, ${name}`;
-        greeting.style.marginBottom = "1.5rem";
-        greeting.style.fontWeight = "500";
-
-        // Insert above Sign Out button
-        const sidebar = document.querySelector(".sidebar");
-        const signOutButton = document.getElementById("signOut");
-        sidebar.insertBefore(greeting, signOutButton);
+        const fullName = user.profile.name || user.profile.given_name || user.profile.email || "User";
+        const names = fullName.split(" ");
+        const initials = (names[0]?.[0] || "") + (names[1]?.[0] || "");
+        document.getElementById("profileIcon").textContent = initials.toUpperCase();
       }
     } catch (err) {
       console.error("Error loading user:", err);
@@ -263,26 +372,19 @@
       const clientId = "2l15ru0njbo72tv2skuceokjf2";
       const logoutUri = "https://bullride.us";
       const logoutUrl = `https://auth.bullride.us/logout?client_id=${clientId}&logout_uri=${encodeURIComponent(logoutUri)}`;
-
-      if (user) {
-        await userManager.removeUser(); // Clear local tokens
-      }
-
+      if (user) await userManager.removeUser();
       window.location.href = logoutUrl;
-    } catch (err) {
-      console.error("Error signing out:", err);
+    } catch {
       window.location.href = "https://bullride.us";
     }
   });
 
-  // Click animation pulse for squares
   document.querySelectorAll('.square').forEach(square => {
     square.addEventListener('click', () => {
       square.classList.add('clicked');
       setTimeout(() => square.classList.remove('clicked'), 300);
     });
   });
-</script>
-
+  </script>
 </body>
 </html>
