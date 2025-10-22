@@ -20,7 +20,7 @@
     /* Header */
     header {
       width: 100%;
-      padding: 1.5rem 3rem;
+      padding: 0.8rem 2.2rem; /* reduced vertical padding */
       display: flex;
       justify-content: space-between;
       align-items: center;
@@ -28,13 +28,13 @@
       top: 0;
       left: 0;
       z-index: 10;
-      background: rgba(0, 0, 0, 0.3);
-      backdrop-filter: blur(10px);
-      border-bottom: 1px solid rgba(255,255,255,0.1);
+      background: rgba(0, 0, 0, 0.25);
+      backdrop-filter: blur(8px);
+      border-bottom: 1px solid rgba(255,255,255,0.08);
     }
 
     header img {
-      height: 70px;
+      height: 65px; /* keep same visual size */
       filter: brightness(1.5);
       transition: transform 0.3s ease;
     }
@@ -45,19 +45,19 @@
 
     .buttons {
       display: flex;
-      gap: 1.2rem;
+      gap: 1rem;
     }
 
     .button {
       background: none;
       border: 1px solid #fff;
       color: #fff;
-      padding: 0.8rem 1.8rem;
+      padding: 0.7rem 1.6rem; /* slightly flatter buttons */
       cursor: pointer;
       transition: all 0.3s ease;
-      border-radius: 10px;
+      border-radius: 8px;
       font-weight: 600;
-      font-size: 1rem;
+      font-size: 0.95rem;
       letter-spacing: 0.3px;
     }
 
@@ -67,6 +67,7 @@
       box-shadow: 0 0 10px #fff;
       transform: translateY(-2px);
     }
+
 
     main {
       display: flex;
