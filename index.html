@@ -20,7 +20,7 @@
     /* Header */
     header {
       width: 100%;
-      padding: 0.8rem 2.2rem; /* reduced vertical padding */
+      padding: 0.8rem 2.2rem;
       display: flex;
       justify-content: space-between;
       align-items: center;
@@ -34,7 +34,7 @@
     }
 
     header img {
-      height: 65px; /* keep same visual size */
+      height: 65px;
       filter: brightness(1.5);
       transition: transform 0.3s ease;
     }
@@ -52,7 +52,7 @@
       background: none;
       border: 1px solid #fff;
       color: #fff;
-      padding: 0.7rem 1.6rem; /* slightly flatter buttons */
+      padding: 0.7rem 1.6rem;
       cursor: pointer;
       transition: all 0.3s ease;
       border-radius: 8px;
@@ -67,7 +67,6 @@
       box-shadow: 0 0 10px #fff;
       transform: translateY(-2px);
     }
-
 
     main {
       display: flex;
@@ -286,6 +285,18 @@
       box-shadow: 0 0 10px #fff;
     }
 
+    /* Footer */
+    footer {
+      width: 100%;
+      text-align: center;
+      padding: 1.2rem 0;
+      border-top: 1px solid rgba(255,255,255,0.1);
+      background: rgba(0,0,0,0.3);
+      backdrop-filter: blur(6px);
+      color: #aaa;
+      font-size: 0.9rem;
+    }
+
     /* ===== Responsive ===== */
     @media (max-width: 900px) {
       header {
@@ -386,6 +397,10 @@
     </form>
   </section>
 
+  <footer>
+    <p>© 2025 Bullride. All rights reserved.</p>
+  </footer>
+
   <script type="module">
     import { UserManager } from "https://cdn.jsdelivr.net/npm/oidc-client-ts@2.2.3/+esm";
 
@@ -405,7 +420,6 @@
       const user = await userManager.getUser();
 
       if (user && !user.expired) {
-        // user is signed in
         buttonsContainer.innerHTML = `
           <button class="button" id="goDashboard">Go to Dashboard</button>
         `;
@@ -413,7 +427,6 @@
           window.location.href = "/dashboard";
         });
       } else {
-        // user is not signed in
         signInBtn.addEventListener("click", async () => {
           await userManager.signinRedirect();
         });
@@ -426,9 +439,7 @@
     checkUser();
   </script>
 
-
   <script>
-    // Mouse parallax hover effect for the circle
     const circle = document.getElementById('circle');
     document.addEventListener('mousemove', (e) => {
       const x = (window.innerWidth / 2 - e.pageX) / 40;
@@ -439,7 +450,6 @@
       circle.style.transform = 'translate(0, 0) scale(1)';
     });
 
-    // Scroll reveal animations
     const revealElements = document.querySelectorAll('.info-section, .contact');
     const revealOnScroll = () => {
       const triggerBottom = window.innerHeight * 0.85;
@@ -453,7 +463,6 @@
     window.addEventListener('scroll', revealOnScroll);
     revealOnScroll();
 
-    // Contact form submit
     const backendURL = 'https://backend.bullride.us';
     const form = document.getElementById('contactForm');
     form.addEventListener('submit', async (e) => {
