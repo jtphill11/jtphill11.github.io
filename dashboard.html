@@ -398,18 +398,31 @@
     <script type="module">
     import { UserManager } from "https://cdn.jsdelivr.net/npm/oidc-client-ts@2.2.3/+esm";
 
-    const userManager = new UserManager({
-      authority: "https://cognito-idp.us-east-1.amazonaws.com/us-east-1_HPx82G5s7",
-      client_id: "2l15ru0njbo72tv2skuceokjf2",
-      redirect_uri: "https://bullride.us/dashboard",
-      response_type: "code",
-      scope: "openid email phone profile"
-    });
-
-    // Immediately check if user is logged in; if not, redirect to homepage
+    // --- Handle Cognito callback and redirect check ---
     (async () => {
-      const user = await userManager.getUser();
-      if (!user || user.expired) {
+      const userManager = new UserManager({
+        authority: "https://cognito-idp.us-east-1.amazonaws.com/us-east-1_HPx82G5s7",
+        client_id: "2l15ru0njbo72tv2skuceokjf2",
+        redirect_uri: "https://bullride.us/dashboard",
+        response_type: "code",
+        scope: "openid email phone profile"
+      });
+
+      try {
+        // If URL contains ?code=..., handle login redirect
+        if (window.location.search.includes("code=")) {
+          await userManager.signinRedirectCallback();
+          window.history.replaceState({}, document.title, "/dashboard"); // clean URL
+        }
+
+        const user = await userManager.getUser();
+
+        if (!user || user.expired) {
+          // Not logged in, send home
+          window.location.href = "https://bullride.us";
+        }
+      } catch (err) {
+        console.error("Error verifying user:", err);
         window.location.href = "https://bullride.us";
       }
     })();
