@@ -133,7 +133,9 @@
       z-index: 310;
     }
 
-    .theme-toggle:hover { background: rgba(255,255,255,0.1); }
+    .theme-toggle:hover {
+      background: rgba(255,255,255,0.1);
+    }
 
     .theme-toggle svg {
       width: 22px;
@@ -142,7 +144,9 @@
       transition: fill 0.4s ease;
     }
 
-    body.light-mode .theme-toggle svg { fill: #000; }
+    body.light-mode .theme-toggle svg {
+      fill: #000;
+    }
 
     /* Profile dropdown */
     .profile-menu {
@@ -186,7 +190,11 @@
 
     .sidebar.hidden ~ main { margin-left: 0; }
 
-    h1 { font-size: 2.8rem; font-weight: 600; margin-bottom: 1rem; }
+    h1 {
+      font-size: 2.8rem;
+      font-weight: 600;
+      margin-bottom: 1rem;
+    }
 
     .lead {
       font-size: 1.2rem;
@@ -203,11 +211,20 @@
       margin-bottom: 4rem;
     }
 
-    .cell { text-align: center; transition: transform 0.3s ease, opacity 0.3s ease; opacity: 0.9; }
-    .cell:hover { transform: translateY(-5px); opacity: 1; }
+    .cell {
+      text-align: center;
+      transition: transform 0.3s ease, opacity 0.3s ease;
+      opacity: 0.9;
+    }
+
+    .cell:hover {
+      transform: translateY(-5px);
+      opacity: 1;
+    }
 
     .square {
-      width: 75px; height: 75px;
+      width: 75px;
+      height: 75px;
       display: grid;
       grid-template-columns: repeat(3, 1fr);
       grid-template-rows: repeat(3, 1fr);
@@ -226,10 +243,21 @@
       transition: transform 0.3s ease, opacity 0.3s ease;
     }
 
-    .square:hover { transform: scale(1.25); gap: 6px; box-shadow: 0 0 25px rgba(255,255,255,0.6); }
+    .square:hover {
+      transform: scale(1.25);
+      gap: 6px;
+      box-shadow: 0 0 25px rgba(255,255,255,0.6);
+    }
 
-    @keyframes rotateSquare { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
-    @keyframes fadeIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes rotateSquare {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(-10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
 
     /* MOBILE */
     @media (max-width: 768px) {
@@ -240,15 +268,53 @@
     }
 
     /* LIGHT MODE */
-    body.light-mode { background-color: #fff; color: #000; }
-    body.light-mode .sidebar { background: rgba(0,0,0,0.05); border-right: 1px solid rgba(0,0,0,0.1); }
-    body.light-mode .sidebar .button { border: 1px solid #000; color: #000; }
-    body.light-mode .sidebar .button:hover { background: #000; color: #fff; }
-    body.light-mode .profile { background: #000; color: #fff; }
-    body.light-mode .profile-menu { background: rgba(0,0,0,0.05); border: 1px solid rgba(0,0,0,0.2); }
-    body.light-mode .profile-menu button { color: #000; }
-    body.light-mode .square div { background: #000; }
+    body.light-mode {
+      background-color: #fff;
+      color: #000;
+    }
+
+    body.light-mode .sidebar {
+      background: rgba(0,0,0,0.05);
+      border-right: 1px solid rgba(0,0,0,0.1);
+    }
+
+    body.light-mode .sidebar .button {
+      border: 1px solid #000;
+      color: #000;
+    }
+
+    body.light-mode .sidebar .button:hover {
+      background: #000;
+      color: #fff;
+      box-shadow: 0 0 10px rgba(0,0,0,0.3);
+    }
+
+    body.light-mode .profile {
+      background: #000;
+      color: #fff;
+    }
+
+    body.light-mode .profile-menu {
+      background: rgba(0,0,0,0.05);
+      border: 1px solid rgba(0,0,0,0.2);
+    }
+
+    body.light-mode .profile-menu button {
+      color: #000;
+    }
+
+    body.light-mode .profile-menu button:hover {
+      background: rgba(0,0,0,0.1);
+    }
+
+    body.light-mode .square div {
+      background: #000;
+    }
+
+    body.light-mode .toggle-btn { background: #000; }
+    body.light-mode .toggle-dot { background: #fff; }
   </style>
+
 </head>
 
 <body>
@@ -259,12 +325,21 @@
     <p>Welcome to your dashboard. Manage your ETFs, explore markets, and discover trending baskets.</p>
   </aside>
 
-  <div class="toggle-btn" id="toggleSidebar"><div class="toggle-dot"></div></div>
-  <div class="profile" id="profileIcon">U</div>
+  <div class="toggle-btn" id="toggleSidebar">
+    <div class="toggle-dot"></div>
+  </div>
 
+  <div class="profile" id="profileIcon">U</div>
   <div class="theme-toggle" id="themeToggle">
-    <svg id="moonIcon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 0112.21 3 7 7 0 1021 12.79z"/></svg>
-    <svg id="sunIcon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" style="display:none;"><path d="M12 18a6 6 0 100-12 6 6 0 000 12zm0 4a1 1 0 010-2h0a1 1 0 010 2zm0-20a1 1 0 010-2h0a1 1 0 010 2zm8.49 17.49a1 1 0 010-1.41h0a1 1 0 011.41 1.41h0a1 1 0 01-1.41 0zM3.51 4.51a1 1 0 010-1.41h0a1 1 0 011.41 1.41h0a1 1 0 01-1.41 0z"/></svg>
+    <!-- Moon (default dark) -->
+    <svg id="moonIcon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+      <path d="M21 12.79A9 9 0 0112.21 3 7 7 0 1021 12.79z"/>
+    </svg>
+
+    <!-- Sun (light mode) -->
+    <svg id="sunIcon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" style="display:none;">
+      <path d="M12 18a6 6 0 100-12 6 6 0 000 12zm0 4a1 1 0 010-2h0a1 1 0 010 2zm0-20a1 1 0 010-2h0a1 1 0 010 2zm8.49 17.49a1 1 0 010-1.41h0a1 1 0 011.41 1.41h0a1 1 0 01-1.41 0zM3.51 4.51a1 1 0 010-1.41h0a1 1 0 011.41 1.41h0a1 1 0 01-1.41 0z"/>
+    </svg>
   </div>
 
   <div class="profile-menu" id="profileMenu">
@@ -272,181 +347,210 @@
     <button id="signOut">Sign Out</button>
   </div>
 
-  <main id="mainContent">
+  <main>
     <h1>Dashboard</h1>
     <p class="lead">Explore and manage your investments — your personalized ETF hub.</p>
-    <section class="grid" id="dashboardGrid"></section>
+
+    <section class="grid">
+      <div class="cell">
+        <div class="square">
+          <div></div><div></div><div></div>
+          <div></div><div></div><div></div>
+          <div></div><div></div><div></div>
+        </div>
+        <h5>Your ETFs</h5>
+      </div>
+      <div class="cell">
+        <div class="square">
+          <div></div><div></div><div></div>
+          <div></div><div></div><div></div>
+          <div></div><div></div><div></div>
+        </div>
+        <h5>Discover</h5>
+      </div>
+      <div class="cell">
+        <div class="square">
+          <div></div><div></div><div></div>
+          <div></div><div></div><div></div>
+          <div></div><div></div><div></div>
+        </div>
+        <h5>Analytics</h5>
+      </div>
+      <div class="cell">
+        <div class="square">
+          <div></div><div></div><div></div>
+          <div></div><div></div><div></div>
+          <div></div><div></div><div></div>
+        </div>
+        <h5>Performance</h5>
+      </div>
+    </section>
   </main>
 
-<script type="module">
-  import { UserManager } from "https://cdn.jsdelivr.net/npm/oidc-client-ts@2.2.3/+esm";
+    <script type="module">
+    import { UserManager } from "https://cdn.jsdelivr.net/npm/oidc-client-ts@2.2.3/+esm";
 
-  const userManager = new UserManager({
-    authority: "https://cognito-idp.us-east-1.amazonaws.com/us-east-1_HPx82G5s7",
-    client_id: "2l15ru0njbo72tv2skuceokjf2",
-    redirect_uri: "https://bullride.us/dashboard",
-    response_type: "code",
-    scope: "openid email phone profile"
-  });
+    const userManager = new UserManager({
+      authority: "https://cognito-idp.us-east-1.amazonaws.com/us-east-1_HPx82G5s7",
+      client_id: "2l15ru0njbo72tv2skuceokjf2",
+      redirect_uri: "https://bullride.us/dashboard",
+      response_type: "code",
+      scope: "openid email phone profile"
+    });
 
-  const sidebar = document.getElementById("sidebar");
-  const toggleSidebar = document.getElementById("toggleSidebar");
-  const profileIcon = document.getElementById("profileIcon");
-  const profileMenu = document.getElementById("profileMenu");
-  const themeToggle = document.getElementById("themeToggle");
-  const moonIcon = document.getElementById("moonIcon");
-  const sunIcon = document.getElementById("sunIcon");
-  const logoImg = document.querySelector(".sidebar img");
-  const body = document.body;
-  const main = document.querySelector("main");
+    const sidebar = document.getElementById("sidebar");
+    const toggleSidebar = document.getElementById("toggleSidebar");
+    const profileIcon = document.getElementById("profileIcon");
+    const profileMenu = document.getElementById("profileMenu");
+    const themeToggle = document.getElementById("themeToggle");
+    const moonIcon = document.getElementById("moonIcon");
+    const sunIcon = document.getElementById("sunIcon");
+    const logoImg = document.querySelector(".sidebar img");
+    const body = document.body;
 
-  // --- Sidebar toggle ---
-  toggleSidebar.addEventListener("click", () => {
-    if (window.innerWidth <= 768) sidebar.classList.toggle("active");
-    else sidebar.classList.toggle("hidden");
-  });
+    // --- Sidebar toggle ---
+    toggleSidebar.addEventListener("click", () => {
+      if (window.innerWidth <= 768) sidebar.classList.toggle("active");
+      else sidebar.classList.toggle("hidden");
+    });
 
-  // --- Profile menu toggle ---
-  profileIcon.addEventListener("click", (e) => {
-    e.stopPropagation();
-    profileMenu.classList.toggle("active");
-  });
+    // --- Profile menu toggle ---
+    profileIcon.addEventListener("click", (e) => {
+      e.stopPropagation();
+      profileMenu.classList.toggle("active");
+    });
 
-  // --- Close profile menu when clicking outside ---
-  document.addEventListener("click", (e) => {
-    if (!profileMenu.contains(e.target) && !profileIcon.contains(e.target)) {
-      profileMenu.classList.remove("active");
-    }
-  });
-
-  // --- Load Cognito user and set initials ---
-  async function loadUser() {
-    try {
-      let user = await userManager.getUser();
-      if (!user) user = await userManager.signinRedirectCallback();
-      if (user && user.profile) {
-        const fullName = user.profile.name || user.profile.given_name || user.profile.email || "User";
-        const names = fullName.split(" ");
-        const initials = (names[0]?.[0] || "") + (names[1]?.[0] || "");
-        document.getElementById("profileIcon").textContent = initials.toUpperCase();
+    // --- Close profile menu when clicking outside ---
+    document.addEventListener("click", (e) => {
+      if (!profileMenu.contains(e.target) && !profileIcon.contains(e.target)) {
+        profileMenu.classList.remove("active");
       }
-    } catch (err) {
-      console.error("Error loading user:", err);
+    });
+
+    // --- Load Cognito user and set initials ---
+    async function loadUser() {
+      try {
+        let user = await userManager.getUser();
+        if (!user) user = await userManager.signinRedirectCallback();
+        if (user && user.profile) {
+          const fullName = user.profile.name || user.profile.given_name || user.profile.email || "User";
+          const names = fullName.split(" ");
+          const initials = (names[0]?.[0] || "") + (names[1]?.[0] || "");
+          document.getElementById("profileIcon").textContent = initials.toUpperCase();
+        }
+      } catch (err) {
+        console.error("Error loading user:", err);
+      }
     }
-  }
-  loadUser();
 
-  // --- THEME TOGGLE (Dark / Light Mode) ---
-  const savedTheme = localStorage.getItem("bullride-theme");
-  if (savedTheme === "light") {
-    body.classList.add("light-mode");
-    moonIcon.style.display = "none";
-    sunIcon.style.display = "block";
-    logoImg.src = "assets/bullride1055_v2_light.png";
-  } else {
-    logoImg.src = "assets/bullride1055_v2.png";
-  }
+    loadUser();
 
-  themeToggle.addEventListener("click", () => {
-    const light = body.classList.toggle("light-mode");
-    if (light) {
+    // --- THEME TOGGLE (Dark / Light Mode) ---
+    const savedTheme = localStorage.getItem("bullride-theme");
+    if (savedTheme === "light") {
+      body.classList.add("light-mode");
       moonIcon.style.display = "none";
       sunIcon.style.display = "block";
       logoImg.src = "assets/bullride1055_v2_light.png";
-      localStorage.setItem("bullride-theme", "light");
     } else {
-      sunIcon.style.display = "none";
-      moonIcon.style.display = "block";
       logoImg.src = "assets/bullride1055_v2.png";
-      localStorage.setItem("bullride-theme", "dark");
     }
-  });
 
-  // --- Smooth fade function ---
-  function fadeContent(content) {
-    main.style.opacity = 0;
-    setTimeout(() => {
-      main.innerHTML = content;
-      main.style.opacity = 1;
-    }, 200);
-  }
-
-  // --- SETTINGS PAGE ---
-  document.querySelector("#profileMenu button:nth-child(1)").addEventListener("click", async () => {
-    fadeContent(`
-      <h1>Settings</h1>
-      <p class="lead">View your account information and preferences.</p>
-      <section style="max-width:500px;">
-        <div style="background:rgba(255,255,255,0.05);padding:20px;border-radius:12px;border:1px solid rgba(255,255,255,0.1);transition:background 0.4s ease;">
-          <h3 style="margin-bottom:1rem;">Profile Information</h3>
-          <p><strong>Username:</strong> <span id="displayUsername">Loading...</span></p>
-          <p><strong>Name:</strong> <span id="displayName">Loading...</span></p>
-          <p><strong>Phone Number:</strong> <span id="displayPhone">Loading...</span></p>
-          <p><strong>Email:</strong> <span id="displayEmail">Loading...</span>
-            <span id="emailVerified" style="font-size:0.9rem;margin-left:8px;color:#aaa;">(checking...)</span></p>
-        </div>
-      </section>
-    `);
-
-    try {
-      const user = await userManager.getUser();
-
-      document.getElementById("displayUsername").textContent =
-        user?.profile?.preferred_username || user?.profile?.username || "(Not available)";
-      document.getElementById("displayName").textContent = user?.profile?.name || "(Not provided)";
-      document.getElementById("displayPhone").textContent = user?.profile?.phone_number || "(Not provided)";
-      document.getElementById("displayEmail").textContent = user?.profile?.email || "(Not provided)";
-
-      if (user?.profile?.email_verified === true || user?.profile?.email_verified === "true") {
-        document.getElementById("emailVerified").textContent = "(verified)";
-        document.getElementById("emailVerified").style.color = "lightgreen";
+    themeToggle.addEventListener("click", () => {
+      const light = body.classList.toggle("light-mode");
+      if (light) {
+        moonIcon.style.display = "none";
+        sunIcon.style.display = "block";
+        logoImg.src = "assets/bullride1055_v2_light.png";
+        localStorage.setItem("bullride-theme", "light");
       } else {
-        document.getElementById("emailVerified").textContent = "(unverified)";
-        document.getElementById("emailVerified").style.color = "orange";
+        sunIcon.style.display = "none";
+        moonIcon.style.display = "block";
+        logoImg.src = "assets/bullride1055_v2.png";
+        localStorage.setItem("bullride-theme", "dark");
       }
-    } catch (err) {
-      console.error("Error loading user info:", err);
-      main.innerHTML = "<p style='color:red;'>Failed to load user data.</p>";
-    }
-  });
+    });
 
-  // --- DASHBOARD BUTTON (reload main view) ---
-  document.getElementById("dashboardBtn").addEventListener("click", () => {
-    fadeContent(`
-      <h1>Dashboard</h1>
-      <p class="lead">Explore and manage your investments — your personalized ETF hub.</p>
-      <section class="grid">
-        <div class="cell">
-          <div class="square">${"<div></div>".repeat(9)}</div>
-          <h5>Your ETFs</h5>
-        </div>
-        <div class="cell">
-          <div class="square">${"<div></div>".repeat(9)}</div>
-          <h5>Discover</h5>
-        </div>
-        <div class="cell">
-          <div class="square">${"<div></div>".repeat(9)}</div>
-          <h5>Analytics</h5>
-        </div>
-        <div class="cell">
-          <div class="square">${"<div></div>".repeat(9)}</div>
-          <h5>Performance</h5>
-        </div>
-      </section>
-    `);
-  });
+    // --- SETTINGS PAGE ---
+    document.querySelector("#profileMenu button:nth-child(1)").addEventListener("click", async () => {
+      const main = document.querySelector("main");
+      main.innerHTML = `
+        <h1>Settings</h1>
+        <p class="lead">View your account information and preferences.</p>
 
-  // --- SIGN OUT ---
-  document.getElementById("signOut").addEventListener("click", async () => {
-    try {
-      const user = await userManager.getUser();
-      const clientId = "2l15ru0njbo72tv2skuceokjf2";
-      const logoutUri = "https://bullride.us";
-      const logoutUrl = `https://auth.bullride.us/logout?client_id=${clientId}&logout_uri=${encodeURIComponent(logoutUri)}`;
-      if (user) await userManager.removeUser();
-      window.location.href = logoutUrl;
-    } catch {
-      window.location.href = "https://bullride.us";
-    }
-  });
-</script>
+        <section style="max-width:500px;">
+          <div style="background:rgba(255,255,255,0.05);padding:20px;border-radius:12px;border:1px solid rgba(255,255,255,0.1);">
+            <h3 style="margin-bottom:1rem;">Profile Information</h3>
+            <p><strong>Username:</strong> <span id="displayUsername">Loading...</span></p>
+            <p><strong>Name:</strong> <span id="displayName">Loading...</span></p>
+            <p><strong>Phone Number:</strong> <span id="displayPhone">Loading...</span></p>
+            <p><strong>Email:</strong> <span id="displayEmail">Loading...</span>
+              <span id="emailVerified" style="font-size:0.9rem;margin-left:8px;color:#aaa;">(checking...)</span></p>
+          </div>
+        </section>
+      `;
+
+      try {
+        const user = await userManager.getUser();
+
+        document.getElementById("displayUsername").textContent = user?.profile?.preferred_username || user?.profile?.username || "(Not available)";
+        document.getElementById("displayName").textContent = user?.profile?.name || "(Not provided)";
+        document.getElementById("displayPhone").textContent = user?.profile?.phone_number || "(Not provided)";
+        document.getElementById("displayEmail").textContent = user?.profile?.email || "(Not provided)";
+
+        if (user?.profile?.email_verified === true || user?.profile?.email_verified === "true") {
+          document.getElementById("emailVerified").textContent = "(verified)";
+          document.getElementById("emailVerified").style.color = "lightgreen";
+        } else {
+          document.getElementById("emailVerified").textContent = "(unverified)";
+          document.getElementById("emailVerified").style.color = "orange";
+        }
+      } catch (err) {
+        console.error("Error loading user info:", err);
+        document.querySelector("section").innerHTML = "<p style='color:red;'>Failed to load user data.</p>";
+      }
+    });
+
+    // --- DASHBOARD BUTTON (reload main view) ---
+    document.getElementById("dashboardBtn").addEventListener("click", () => {
+      const main = document.querySelector("main");
+      main.innerHTML = `
+        <h1>Dashboard</h1>
+        <p class="lead">Explore and manage your investments — your personalized ETF hub.</p>
+        <section class="grid">
+          <div class="cell">
+            <div class="square">${"<div></div>".repeat(9)}</div>
+            <h5>Your ETFs</h5>
+          </div>
+          <div class="cell">
+            <div class="square">${"<div></div>".repeat(9)}</div>
+            <h5>Discover</h5>
+          </div>
+          <div class="cell">
+            <div class="square">${"<div></div>".repeat(9)}</div>
+            <h5>Analytics</h5>
+          </div>
+          <div class="cell">
+            <div class="square">${"<div></div>".repeat(9)}</div>
+            <h5>Performance</h5>
+          </div>
+        </section>
+      `;
+    });
+
+    // --- SIGN OUT ---
+    document.getElementById("signOut").addEventListener("click", async () => {
+      try {
+        const user = await userManager.getUser();
+        const clientId = "2l15ru0njbo72tv2skuceokjf2";
+        const logoutUri = "https://bullride.us";
+        const logoutUrl = `https://auth.bullride.us/logout?client_id=${clientId}&logout_uri=${encodeURIComponent(logoutUri)}`;
+        if (user) await userManager.removeUser();
+        window.location.href = logoutUrl;
+      } catch {
+        window.location.href = "https://bullride.us";
+      }
+    });
+  </script>
+</body>
+</html>
