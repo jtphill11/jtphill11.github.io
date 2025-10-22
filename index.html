@@ -45,18 +45,20 @@
 
     .buttons {
       display: flex;
-      gap: 1rem;
+      gap: 1.2rem;
     }
 
     .button {
       background: none;
       border: 1px solid #fff;
       color: #fff;
-      padding: 0.6rem 1.2rem;
+      padding: 0.8rem 1.8rem;
       cursor: pointer;
       transition: all 0.3s ease;
-      border-radius: 8px;
-      font-weight: 500;
+      border-radius: 10px;
+      font-weight: 600;
+      font-size: 1rem;
+      letter-spacing: 0.3px;
     }
 
     .button:hover {
@@ -75,7 +77,13 @@
       padding-top: 120px;
     }
 
-    /* Hero Text Animations */
+    /* Hero Text */
+    h1 {
+      font-size: 3rem;
+      font-weight: 700;
+      text-align: center;
+    }
+
     .fade-in {
       opacity: 0;
       transform: translateY(20px);
@@ -93,12 +101,6 @@
       }
     }
 
-    h1 {
-      font-size: 3rem;
-      font-weight: 600;
-      text-align: center;
-    }
-
     .subheading {
       display: flex;
       align-items: center;
@@ -108,8 +110,8 @@
     }
 
     .subheading span {
-      font-size: 2rem;
-      font-weight: 400;
+      font-size: 2.2rem;
+      font-weight: 700;
       opacity: 0;
       animation: fadeIn 2s ease forwards;
     }
@@ -127,7 +129,7 @@
       transition: all 0.5s ease;
       position: relative;
       animation: float 6s ease-in-out infinite;
-      margin: 3rem 0;
+      margin: 2rem 0;
       cursor: pointer;
     }
 
@@ -165,7 +167,7 @@
     /* Info Section */
     .info-section {
       max-width: 800px;
-      margin: 6rem auto;
+      margin: 2rem auto 4rem;
       text-align: center;
       padding: 0 1rem;
       opacity: 0;
@@ -189,12 +191,13 @@
       display: flex;
       flex-wrap: wrap;
       gap: 3rem;
-      justify-content: center;
+      justify-content: space-between;
       max-width: 900px;
       margin: 0 auto 5rem;
       opacity: 0;
       transform: translateY(30px);
       transition: opacity 1s ease, transform 1s ease;
+      padding: 0 1rem;
     }
 
     .contact.visible {
@@ -205,7 +208,7 @@
     .contact-info {
       flex: 1;
       min-width: 260px;
-      text-align: center;
+      text-align: left;
     }
 
     .contact-info h3 {
@@ -215,16 +218,25 @@
     .contact-info p {
       color: #aaa;
       margin-bottom: 1.5rem;
+      line-height: 1.5;
     }
 
     .contact-info ul {
       display: flex;
-      justify-content: center;
-      gap: 1rem;
+      gap: 1.2rem;
+      list-style: none;
+      padding: 0;
     }
 
     .contact-info a {
+      color: #fff;
       font-weight: 600;
+      text-decoration: none;
+      transition: opacity 0.3s ease;
+    }
+
+    .contact-info a:hover {
+      opacity: 0.7;
     }
 
     form {
@@ -256,6 +268,9 @@
       cursor: pointer;
       font-weight: 600;
       transition: 0.3s ease;
+      border-radius: 8px;
+      padding: 0.9rem;
+      font-size: 1rem;
     }
 
     input[type="submit"]:hover {
@@ -269,6 +284,8 @@
       .subheading { flex-direction: column; }
       .subheading span { font-size: 1.8rem; }
       .circle { width: 160px; height: 160px; }
+      .contact { flex-direction: column; align-items: center; text-align: center; }
+      .contact-info { text-align: center; }
     }
   </style>
 </head>
