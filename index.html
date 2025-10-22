@@ -15,15 +15,12 @@
       color: #fff;
       overflow-x: hidden;
       line-height: 1.6;
-      display: flex;
-      flex-direction: column;
-      min-height: 100vh;
     }
 
     /* Header */
     header {
       width: 100%;
-      padding: 0.8rem 2.2rem;
+      padding: 0.8rem 2.2rem; /* reduced vertical padding */
       display: flex;
       justify-content: space-between;
       align-items: center;
@@ -37,7 +34,7 @@
     }
 
     header img {
-      height: 65px;
+      height: 65px; /* keep same visual size */
       filter: brightness(1.5);
       transition: transform 0.3s ease;
     }
@@ -55,7 +52,7 @@
       background: none;
       border: 1px solid #fff;
       color: #fff;
-      padding: 0.7rem 1.6rem;
+      padding: 0.7rem 1.6rem; /* slightly flatter buttons */
       cursor: pointer;
       transition: all 0.3s ease;
       border-radius: 8px;
@@ -71,12 +68,13 @@
       transform: translateY(-2px);
     }
 
+
     main {
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      flex-grow: 1;
+      min-height: 100vh;
       padding-top: 120px;
     }
 
@@ -172,10 +170,10 @@
       50% { box-shadow: 0 0 70px rgba(255,255,255,0.9); transform: scale(1.03); }
     }
 
-    /* Info Section (hidden on load) */
+    /* Info Section */
     .info-section {
       max-width: 800px;
-      margin: 4rem auto;
+      margin: 2rem auto 4rem;
       text-align: center;
       padding: 0 1rem;
       opacity: 0;
@@ -288,15 +286,6 @@
       box-shadow: 0 0 10px #fff;
     }
 
-    /* Minimal Copyright */
-    .copyright {
-      text-align: center;
-      color: #777;
-      font-size: 0.85rem;
-      margin: 2rem 0 1rem;
-      opacity: 0.7;
-    }
-
     /* ===== Responsive ===== */
     @media (max-width: 900px) {
       header {
@@ -397,10 +386,6 @@
     </form>
   </section>
 
-  <div class="copyright">
-    © 2025 Bullride. All rights reserved.
-  </div>
-
   <script type="module">
     import { UserManager } from "https://cdn.jsdelivr.net/npm/oidc-client-ts@2.2.3/+esm";
 
@@ -420,6 +405,7 @@
       const user = await userManager.getUser();
 
       if (user && !user.expired) {
+        // user is signed in
         buttonsContainer.innerHTML = `
           <button class="button" id="goDashboard">Go to Dashboard</button>
         `;
@@ -427,6 +413,7 @@
           window.location.href = "/dashboard";
         });
       } else {
+        // user is not signed in
         signInBtn.addEventListener("click", async () => {
           await userManager.signinRedirect();
         });
@@ -439,7 +426,9 @@
     checkUser();
   </script>
 
+
   <script>
+    // Mouse parallax hover effect for the circle
     const circle = document.getElementById('circle');
     document.addEventListener('mousemove', (e) => {
       const x = (window.innerWidth / 2 - e.pageX) / 40;
@@ -450,19 +439,21 @@
       circle.style.transform = 'translate(0, 0) scale(1)';
     });
 
-    // Scroll reveal (restore original behavior)
+    // Scroll reveal animations
     const revealElements = document.querySelectorAll('.info-section, .contact');
-    function revealOnScroll() {
+    const revealOnScroll = () => {
       const triggerBottom = window.innerHeight * 0.85;
       revealElements.forEach(el => {
         const boxTop = el.getBoundingClientRect().top;
-        if (boxTop < triggerBottom) el.classList.add('visible');
+        if (boxTop < triggerBottom) {
+          el.classList.add('visible');
+        }
       });
-    }
-
+    };
     window.addEventListener('scroll', revealOnScroll);
     revealOnScroll();
 
+    // Contact form submit
     const backendURL = 'https://backend.bullride.us';
     const form = document.getElementById('contactForm');
     form.addEventListener('submit', async (e) => {
