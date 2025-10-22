@@ -83,6 +83,10 @@
       transition: transform 0.3s ease, background 0.3s ease;
     }
 
+    .toggle-btn:hover {
+      transform: scale(1.1);
+    }
+
     .toggle-dot {
       width: 10px;
       height: 10px;
@@ -97,10 +101,6 @@
 
     .sidebar:not(.hidden) ~ .toggle-btn .toggle-dot {
       transform: translateX(4px);
-    }
-
-    .toggle-btn:hover {
-      transform: scale(1.1);
     }
 
     /* Profile icon */
@@ -127,6 +127,7 @@
       transform: scale(1.05);
     }
 
+    /* Profile dropdown */
     .profile-menu {
       position: absolute;
       top: 70px;
@@ -140,6 +141,7 @@
       flex-direction: column;
       width: 180px;
       animation: fadeIn 0.3s ease forwards;
+      z-index: 400;
     }
 
     .profile-menu.active {
@@ -159,14 +161,6 @@
 
     .profile-menu button:hover {
       background: rgba(255,255,255,0.15);
-    }
-
-    .close-profile {
-      text-align: right;
-      padding: 0.5rem 1rem;
-      font-size: 1.2rem;
-      cursor: pointer;
-      color: #aaa;
     }
 
     /* Main content */
@@ -284,7 +278,6 @@
 
   <div class="profile" id="profileIcon">U</div>
   <div class="profile-menu" id="profileMenu">
-    <div class="close-profile" id="closeProfile">×</div>
     <button>Settings</button>
     <button id="signOut">Sign Out</button>
   </div>
@@ -344,8 +337,8 @@
   const toggleSidebar = document.getElementById("toggleSidebar");
   const profileIcon = document.getElementById("profileIcon");
   const profileMenu = document.getElementById("profileMenu");
-  const closeProfile = document.getElementById("closeProfile");
 
+  // Toggle sidebar
   toggleSidebar.addEventListener("click", () => {
     if (window.innerWidth <= 768) {
       sidebar.classList.toggle("active");
@@ -354,14 +347,20 @@
     }
   });
 
-  profileIcon.addEventListener("click", () => {
+  // Toggle profile menu
+  profileIcon.addEventListener("click", (e) => {
+    e.stopPropagation();
     profileMenu.classList.toggle("active");
   });
 
-  closeProfile.addEventListener("click", () => {
-    profileMenu.classList.remove("active");
+  // Close profile menu when clicking outside
+  document.addEventListener("click", (e) => {
+    if (!profileMenu.contains(e.target) && !profileIcon.contains(e.target)) {
+      profileMenu.classList.remove("active");
+    }
   });
 
+  // Load user + set initials
   async function loadUser() {
     try {
       let user = await userManager.getUser();
@@ -379,6 +378,7 @@
 
   loadUser();
 
+  // Sign out
   document.getElementById("signOut").addEventListener("click", async () => {
     try {
       const user = await userManager.getUser();
