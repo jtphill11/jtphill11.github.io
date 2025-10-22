@@ -36,8 +36,14 @@
 
     .sidebar img {
       width: 140px;
-      margin-bottom: 2rem;
+      margin-bottom: 1rem;
       filter: brightness(1.5);
+    }
+
+    #greeting {
+      font-size: 1.2rem;
+      font-weight: 500;
+      margin-bottom: 1.5rem;
     }
 
     .sidebar .button {
@@ -167,6 +173,7 @@
 <body>
   <aside class="sidebar">
     <img src="assets/bullride1055_v2.png" alt="Bullride Logo">
+    <h2 id="greeting">Hello!</h2>
     <button class="button" id="signOut">Sign Out</button>
     <p>Welcome to your dashboard. Manage your ETFs, explore markets, and discover trending baskets.</p>
   </aside>
@@ -222,29 +229,38 @@
       client_id: "2l15ru0njbo72tv2skuceokjf2",
       redirect_uri: "https://bullride.us/dashboard",
       response_type: "code",
-      scope: "openid email phone"
+      scope: "openid email phone profile"
     });
+
+    (async () => {
+      try {
+        const user = await userManager.getUser();
+        if (user && user.profile && user.profile.name) {
+          document.getElementById("greeting").textContent = `Hello, ${user.profile.name}!`;
+        } else if (user && user.profile && user.profile.email) {
+          document.getElementById("greeting").textContent = `Hello, ${user.profile.email.split('@')[0]}!`;
+        }
+      } catch (err) {
+        console.error("Error fetching user profile:", err);
+      }
+    })();
 
     document.getElementById("signOut").addEventListener("click", async () => {
       try {
         const user = await userManager.getUser();
-        const clientId = "2l15ru0njbo72tv2skuceokjf2";
-        const logoutUri = "https://bullride.us";
-        const logoutUrl = `https://auth.bullride.us/logout?client_id=${clientId}&logout_uri=${encodeURIComponent(logoutUri)}`;
-
         if (user) {
-          await userManager.removeUser(); // Clear local tokens
+          const logoutUrl = `https://auth.bullride.us/logout?client_id=2l15ru0njbo72tv2skuceokjf2&logout_uri=${encodeURIComponent("https://bullride.us")}`;
+          await userManager.removeUser();
+          window.location.href = logoutUrl;
+        } else {
+          window.location.href = "https://bullride.us";
         }
-
-        // Redirect to Cognito hosted logout endpoint to clear hosted UI cookies
-        window.location.href = logoutUrl;
       } catch (err) {
         console.error("Error signing out:", err);
         window.location.href = "https://bullride.us";
       }
     });
 
-    // Click animation pulse for squares
     document.querySelectorAll('.square').forEach(square => {
       square.addEventListener('click', () => {
         square.classList.add('clicked');
