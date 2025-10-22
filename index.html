@@ -128,7 +128,7 @@
       box-shadow: 0 0 40px rgba(255,255,255,0.6);
       transition: all 0.5s ease;
       position: relative;
-      animation: float 6s ease-in-out infinite;
+      animation: float 6s ease-in-out infinite, pulse 3s ease-in-out infinite;
       margin: 2rem 0;
       cursor: pointer;
     }
@@ -162,6 +162,11 @@
     @keyframes float {
       0%, 100% { transform: translateY(0); }
       50% { transform: translateY(-15px); }
+    }
+
+    @keyframes pulse {
+      0%, 100% { box-shadow: 0 0 40px rgba(255,255,255,0.6); transform: scale(1); }
+      50% { box-shadow: 0 0 70px rgba(255,255,255,0.9); transform: scale(1.03); }
     }
 
     /* Info Section */
@@ -280,11 +285,57 @@
       box-shadow: 0 0 10px #fff;
     }
 
-    @media (max-width: 768px) {
-      .subheading { flex-direction: column; }
-      .subheading span { font-size: 1.8rem; }
-      .circle { width: 160px; height: 160px; }
-      .contact { flex-direction: column; align-items: center; text-align: center; }
+    /* ===== Responsive ===== */
+    @media (max-width: 900px) {
+      header {
+        padding: 1rem 1.5rem;
+      }
+      header img {
+        height: 50px;
+      }
+      .button {
+        padding: 0.6rem 1.2rem;
+        font-size: 0.9rem;
+      }
+    }
+
+    @media (max-width: 600px) {
+      header {
+        flex-direction: row;
+        justify-content: space-between;
+      }
+      header img {
+        height: 40px;
+      }
+      .buttons {
+        gap: 0.6rem;
+      }
+      .button {
+        padding: 0.5rem 1rem;
+        font-size: 0.85rem;
+        border-radius: 6px;
+      }
+      h1 {
+        font-size: 2.2rem;
+      }
+      .subheading span {
+        font-size: 1.5rem;
+      }
+      .circle {
+        width: 150px;
+        height: 150px;
+      }
+      .info-section {
+        margin: 1.5rem auto 3rem;
+      }
+      .lead {
+        font-size: 1.1rem;
+      }
+      .contact {
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+      }
       .contact-info { text-align: center; }
     }
   </style>
