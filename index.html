@@ -388,6 +388,7 @@
 
   <script type="module">
     import { UserManager } from "https://cdn.jsdelivr.net/npm/oidc-client-ts@2.2.3/+esm";
+
     const userManager = new UserManager({
       authority: "https://cognito-idp.us-east-1.amazonaws.com/us-east-1_HPx82G5s7",
       client_id: "2l15ru0njbo72tv2skuceokjf2",
@@ -396,13 +397,35 @@
       scope: "openid email phone profile"
     });
 
-    document.getElementById("signIn").addEventListener("click", async () => {
-      await userManager.signinRedirect();
-    });
-    document.getElementById("signUp").addEventListener("click", async () => {
-      await userManager.signinRedirect({ screen_hint: "signup" });
-    });
+    const signInBtn = document.getElementById("signIn");
+    const signUpBtn = document.getElementById("signUp");
+    const buttonsContainer = document.querySelector(".buttons");
+
+    async function checkUser() {
+      const user = await userManager.getUser();
+
+      if (user && !user.expired) {
+        // user is signed in
+        buttonsContainer.innerHTML = `
+          <button class="button" id="goDashboard">Go to Dashboard</button>
+        `;
+        document.getElementById("goDashboard").addEventListener("click", () => {
+          window.location.href = "/dashboard";
+        });
+      } else {
+        // user is not signed in
+        signInBtn.addEventListener("click", async () => {
+          await userManager.signinRedirect();
+        });
+        signUpBtn.addEventListener("click", async () => {
+          await userManager.signinRedirect({ screen_hint: "signup" });
+        });
+      }
+    }
+
+    checkUser();
   </script>
+
 
   <script>
     // Mouse parallax hover effect for the circle
