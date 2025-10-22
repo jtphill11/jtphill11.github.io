@@ -347,7 +347,6 @@
       margin: 4rem 0 1rem;
     }
 
-    
   </style>
 </head>
 
@@ -411,7 +410,20 @@
     const buttonsContainer = document.querySelector(".buttons");
 
     async function checkUser() {
-      const user = await userManager.getUser();
+      let user = await userManager.getUser();
+
+      // ✅ Try silent sign-in if no user but Cognito session still exists
+      if (!user || user.expired) {
+        try {
+          user = await userManager.signinSilent();
+        } catch (silentErr) {
+          console.warn("Silent sign-in failed or no session:", silentErr);
+        }
+      }
+
+      const buttonsContainer = document.getElementById("buttonsContainer");
+      const signInBtn = document.getElementById("signInBtn");
+      const signUpBtn = document.getElementById("signUpBtn");
 
       if (user && !user.expired) {
         // user is signed in
@@ -432,7 +444,8 @@
       }
     }
 
-    checkUser();
+  checkUser();
+
   </script>
 
 
