@@ -15,6 +15,9 @@
       color: #fff;
       overflow-x: hidden;
       line-height: 1.6;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
     }
 
     /* Header */
@@ -73,7 +76,7 @@
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      min-height: 100vh;
+      flex-grow: 1;
       padding-top: 120px;
     }
 
@@ -285,16 +288,12 @@
       box-shadow: 0 0 10px #fff;
     }
 
-    /* Footer */
-    footer {
-      width: 100%;
+    /* Minimal Copyright */
+    .copyright {
       text-align: center;
-      padding: 1.2rem 0;
-      border-top: 1px solid rgba(255,255,255,0.1);
-      background: rgba(0,0,0,0.3);
-      backdrop-filter: blur(6px);
-      color: #aaa;
-      font-size: 0.9rem;
+      color: #777;
+      font-size: 0.85rem;
+      margin: 2rem 0 1rem;
     }
 
     /* ===== Responsive ===== */
@@ -397,9 +396,9 @@
     </form>
   </section>
 
-  <footer>
-    <p>© 2025 Bullride. All rights reserved.</p>
-  </footer>
+  <div class="copyright">
+    © 2025 Bullride. All rights reserved.
+  </div>
 
   <script type="module">
     import { UserManager } from "https://cdn.jsdelivr.net/npm/oidc-client-ts@2.2.3/+esm";
