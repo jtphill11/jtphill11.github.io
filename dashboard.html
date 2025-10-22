@@ -406,6 +406,14 @@
       scope: "openid email phone profile"
     });
 
+    // Immediately check if user is logged in; if not, redirect to homepage
+    (async () => {
+      const user = await userManager.getUser();
+      if (!user || user.expired) {
+        window.location.href = "https://bullride.us";
+      }
+    })();
+
     const sidebar = document.getElementById("sidebar");
     const toggleSidebar = document.getElementById("toggleSidebar");
     const profileIcon = document.getElementById("profileIcon");
