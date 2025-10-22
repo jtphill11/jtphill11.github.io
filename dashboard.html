@@ -406,6 +406,21 @@
       scope: "openid email phone profile"
     });
 
+    // --- Redirect unauthenticated users to home ---
+    (async () => {
+      try {
+        const user = await userManager.getUser();
+        if (!user) {
+          // no valid session — redirect to home
+          window.location.href = "https://bullride.us";
+          return;
+        }
+      } catch (err) {
+        console.error("Auth check failed:", err);
+        window.location.href = "https://bullride.us";
+      }
+    })();
+
     const sidebar = document.getElementById("sidebar");
     const toggleSidebar = document.getElementById("toggleSidebar");
     const profileIcon = document.getElementById("profileIcon");
