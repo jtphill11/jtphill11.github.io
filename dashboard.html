@@ -235,14 +235,22 @@
       }
 
       if (user && user.profile) {
-        const name = user.profile.name || user.profile.given_name || user.profile.email || "User";
-        const greeting = document.createElement("h1");
+        // Extract first name safely
+        let name = user.profile.given_name || user.profile.name || user.profile.email || "User";
+        if (name.includes(" ")) {
+          name = name.split(" ")[0]; // Take only first name if full name provided
+        }
+
+        // Create greeting element
+        const greeting = document.createElement("h2");
         greeting.textContent = `Hello, ${name}`;
-        document.querySelector("main").prepend(greeting);
-      } else {
-        const greeting = document.createElement("h1");
-        greeting.textContent = "Hello, User";
-        document.querySelector("main").prepend(greeting);
+        greeting.style.marginBottom = "1.5rem";
+        greeting.style.fontWeight = "500";
+
+        // Insert above Sign Out button
+        const sidebar = document.querySelector(".sidebar");
+        const signOutButton = document.getElementById("signOut");
+        sidebar.insertBefore(greeting, signOutButton);
       }
     } catch (err) {
       console.error("Error loading user:", err);
@@ -277,7 +285,6 @@
     });
   });
 </script>
-
 
 </body>
 </html>
