@@ -411,24 +411,49 @@
     const API_BASE = "https://api.bullride.us";
 
     // ---------- Mini helpers for charts & math ----------
+    const activeCharts = {};
+
     async function fetchBarsMulti(symbolsCsv, timeframe = "1Day", limit = 20) {
-      const url = `${API_BASE}/api/stocks/bars?symbols=${encodeURIComponent(symbolsCsv)}&timeframe=${timeframe}&limit=${limit}`;
+      const startParam = (timeframe === "1Day")
+        ? `&start=${new Date(Date.now() - 86400000 * limit).toISOString()}`
+        : "";
+      const url = `${API_BASE}/api/stocks/bars?symbols=${encodeURIComponent(symbolsCsv)}&timeframe=${timeframe}&limit=${limit}${startParam}`;
       const r = await fetch(url);
-      return r.json(); // { bars: { AAPL:[...], MSFT:[...] } }
+      return await r.json();
     }
+
 
     async function drawMiniChart(symbol, canvas, timeframe = "1Day") {
       try {
         const data = await fetchBarsMulti(symbol, timeframe, 20);
         const arr = data?.bars?.[symbol] || [];
+        if (arr.length === 0) return;
+
         const labels = arr.map(b => (b.t || '').slice(5, 10));
         const values = arr.map(b => b.c);
+
         const ctx = canvas.getContext("2d");
-        // destroy previous chart instance if any
-        if (canvas._chart) { canvas._chart.destroy(); }
-        canvas._chart = new Chart(ctx, {
+
+        // If chart already exists, just update data
+        if (activeCharts[symbol]) {
+          activeCharts[symbol].data.labels = labels;
+          activeCharts[symbol].data.datasets[0].data = values;
+          activeCharts[symbol].update();
+          return;
+        }
+
+        // Otherwise, create it
+        activeCharts[symbol] = new Chart(ctx, {
           type: 'line',
-          data: { labels, datasets: [{ data: values, borderColor: '#00ff7f', fill: false, tension: 0.3 }] },
+          data: {
+            labels,
+            datasets: [{
+              data: values,
+              borderColor: '#00ff7f',
+              fill: false,
+              tension: 0.3
+            }]
+          },
           options: {
             responsive: true,
             plugins: { legend: { display: false } },
@@ -436,8 +461,8 @@
             elements: { point: { radius: 0 } }
           }
         });
-      } catch (e) {
-        console.error("Chart error for", symbol, e);
+      } catch (err) {
+        console.error(`Chart error for ${symbol}:`, err);
       }
     }
 
