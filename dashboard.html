@@ -1133,17 +1133,24 @@
 
       function cleanCompanyName(name) {
         if (!name) return "";
+        
         let cleaned = name
+          // Remove unwanted terms (company types, share classes, etc.)
           .replace(/\b(Common|Preferred|Ordinary|Depositary|Class [A-Z])\b/gi, "")
-          .replace(/\b(Stock|Shares?|Inc\.?|Corp\.?|Corporation|PLC|LLC)\b/gi, "")
-          .replace(/\s{2,}/g, " ") // remove extra spaces
+          .replace(/\b(Stock|Shares?|Inc\.?|Corp\.?|Corporation|PLC|LLC|Ltd\.?)\b/gi, "")
+          // Clean up punctuation and extra spaces
+          .replace(/[.,]+(?=\s|$)/g, "")        // remove dangling punctuation
+          .replace(/\s{2,}/g, " ")              // collapse multiple spaces
           .trim();
 
-        // Keep ETFs/funds recognizable
+        // Preserve ETF, Fund, or Trust identifiers
         if (/\b(ETF|Fund|Trust)\b/i.test(name)) {
           const match = name.match(/\b(ETF|Fund|Trust)\b/i);
           if (match && !cleaned.includes(match[0])) cleaned += ` ${match[0]}`;
         }
+
+        // Remove leftover punctuation again after appending ETF/Fund
+        cleaned = cleaned.replace(/[.,]+(?=\s|$)/g, "").trim();
 
         return cleaned;
       }
