@@ -412,7 +412,7 @@
 
     // ---------- Mini helpers for charts & math ----------
     async function fetchBarsMulti(symbolsCsv, timeframe = "1Day", limit = 20) {
-      const url = `${API_BASE}/api/alpaca/bars?symbols=${encodeURIComponent(symbolsCsv)}&timeframe=${timeframe}&limit=${limit}`;
+      const url = `${API_BASE}/api/stocks/bars?symbols=${encodeURIComponent(symbolsCsv)}&timeframe=${timeframe}&limit=${limit}`;
       const r = await fetch(url);
       return r.json(); // { bars: { AAPL:[...], MSFT:[...] } }
     }
@@ -817,7 +817,7 @@
 
       async function loadPopular() {
         stocksGrid.innerHTML = `<p>Loading popular stocks...</p>`;
-        const res = await fetch(`${API_BASE}/api/alpaca/popular`);
+        const res = await fetch(`${API_BASE}/api/stocks/popular`);
         const list = await res.json(); // [{symbol, quote}]
         renderStocks(list);
       }
@@ -829,7 +829,7 @@
         return;
       }
 
-      const url = `${API_BASE}/api/alpaca/search?q=${encodeURIComponent(q)}`;
+      const url = `${API_BASE}/api/stocks/search?q=${encodeURIComponent(q)}`;
       console.log("Search URL:", url);
 
       stocksGrid.innerHTML = `<p>Searching...</p>`;
