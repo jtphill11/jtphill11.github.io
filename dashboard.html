@@ -1169,14 +1169,20 @@
           total += est;
           return `
             <div>${s.symbol}</div>
-            <div style="opacity:.8;font-size:.85rem;">${cleanCompanyName(s.name)}</div>
+            <div>${cleanCompanyName(s.name)}</div>
             <div>${s.shares.toFixed(2)}</div>
             <div>$${est.toFixed(2)}</div>
           `;
         }).join("");
 
         previewList.innerHTML = `
-          <div style="display:grid;grid-template-columns:1fr 1.5fr 1fr 1fr;gap:.6rem;">
+          <div style="
+            display:grid;
+            grid-template-columns:1fr 1.5fr 1fr 1fr;
+            gap:.6rem;
+            font-size:0.95rem;
+            color:#fff;
+          ">
             <strong>Symbol</strong>
             <strong>Company</strong>
             <strong>Shares</strong>
