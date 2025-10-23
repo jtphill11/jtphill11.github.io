@@ -1103,8 +1103,13 @@
               card.style.borderColor = "transparent";
               card.querySelector(".shares-row").style.display = "none";
             } else {
-              selected[sym] = { symbol: sym, shares: 1, price: mid || 0 };
-              card.style.borderColor = "#00FF7F"; // bright green border
+              selected[sym] = {
+                symbol: sym,
+                name: item.name || sym, // store company name
+                shares: 1,
+                price: mid || 0
+              };
+              card.style.borderColor = "#00FF7F";
               card.querySelector(".shares-row").style.display = "block";
             }
             updatePreview();
@@ -1140,18 +1145,23 @@
           total += est;
           return `
             <div>${s.symbol}</div>
+            <div style="opacity:.8;font-size:.85rem;">${s.name}</div>
             <div>${s.shares.toFixed(2)}</div>
             <div>$${est.toFixed(2)}</div>
           `;
         }).join("");
 
         previewList.innerHTML = `
-          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:.6rem;">
-            <strong>Symbol</strong><strong>Shares</strong><strong>Est. Value</strong>
+          <div style="display:grid;grid-template-columns:1fr 1.5fr 1fr 1fr;gap:.6rem;">
+            <strong>Symbol</strong>
+            <strong>Company</strong>
+            <strong>Shares</strong>
+            <strong>Est. Value</strong>
             ${rows}
-            <div></div><strong>Total</strong><strong>$${total.toFixed(2)}</strong>
+            <div></div><div></div><strong>Total</strong><strong>$${total.toFixed(2)}</strong>
           </div>
         `;
+
         finalizeBtn.style.display = "inline-block";
       }
 
