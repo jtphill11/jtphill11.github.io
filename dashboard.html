@@ -434,61 +434,45 @@
 
         const labels = arr.map(b => (b.t || '').slice(5, 10));
         const values = arr.map(b => b.c);
-
         const ctx = canvas.getContext("2d");
 
-        // If chart already exists, just update data
+        // Destroy old chart if it exists
         if (activeCharts[symbol]) {
-          activeCharts[symbol].data.labels = labels;
-          activeCharts[symbol].data.datasets[0].data = values;
-          activeCharts[symbol].update();
-          return;
+          activeCharts[symbol].destroy();
+          delete activeCharts[symbol];
         }
 
-        // Otherwise, create it
+        // --- Determine line color ---
+        const first = arr[0]?.c ?? 0;
+        const last = arr[arr.length - 1]?.c ?? 0;
+
+        function isAfterHours() {
+          const now = new Date();
+          const est = new Date(now.toLocaleString("en-US", { timeZone: "America/New_York" }));
+          const hours = est.getHours() + est.getMinutes() / 60;
+          return hours < 9.5 || hours >= 16; // before 9:30am or after 4pm ET
+        }
+
+        let borderColor;
+        if (isAfterHours()) {
+          borderColor = "#FFD700"; // yellow
+        } else if (last < first) {
+          borderColor = "#FF5555"; // red
+        } else {
+          borderColor = "#00FF7F"; // green
+        }
+
+        // Create chart
         activeCharts[symbol] = new Chart(ctx, {
-          type: 'line',
+          type: "line",
           data: {
             labels,
-            // --- Determine line color ---
-            const first = arr[0]?.c ?? 0;
-            const last = arr[arr.length - 1]?.c ?? 0;
-
-            function isAfterHours() {
-              const now = new Date();
-              const est = new Date(now.toLocaleString('en-US', { timeZone: 'America/New_York' }));
-              const hours = est.getHours() + est.getMinutes() / 60;
-              return hours < 9.5 || hours >= 16; // before 9:30am or after 4pm ET
-            }
-
-            let borderColor;
-            if (isAfterHours()) {
-              borderColor = '#FFD700'; // yellow
-            } else if (last < first) {
-              borderColor = '#FF5555'; // red
-            } else {
-              borderColor = '#00FF7F'; // green
-            }
-
-            activeCharts[symbol] = new Chart(ctx, {
-              type: 'line',
-              data: {
-                labels,
-                datasets: [{
-                  data: values,
-                  borderColor,
-                  fill: false,
-                  tension: 0.3
-                }]
-              },
-              options: {
-                responsive: true,
-                plugins: { legend: { display: false } },
-                scales: { x: { display: false }, y: { display: false } },
-                elements: { point: { radius: 0 } }
-              }
-            });
-
+            datasets: [{
+              data: values,
+              borderColor,
+              fill: false,
+              tension: 0.3
+            }]
           },
           options: {
             responsive: true,
@@ -506,7 +490,6 @@
       if (!oldVal || oldVal === 0 || newVal == null) return 0;
       return ((newVal - oldVal) / oldVal) * 100;
     }
-
 
     // Make available to other scripts
     window.userManager = userManager;
@@ -1007,7 +990,7 @@
             }
           });
         });
-        
+
         tfSelect.dispatchEvent(new Event("change"));
       }
 
