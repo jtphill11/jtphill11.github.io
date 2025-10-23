@@ -1,8 +1,6 @@
 // routes/alpaca.js
 const express = require('express');
 const router = express.Router();
-
-// Fix for fetch() in all Node.js environments
 const fetch = (...args) => import('node-fetch').then(({ default: fetch }) => fetch(...args));
 
 const HEADERS = {
@@ -10,11 +8,11 @@ const HEADERS = {
   'APCA-API-SECRET-KEY': process.env.ALPACA_SECRET
 };
 
-const DATA  = process.env.ALPACA_DATA_URL || 'https://data.alpaca.markets/v2';
+const DATA = process.env.ALPACA_DATA_URL || 'https://data.alpaca.markets/v2';
 const PAPER = 'https://paper-api.alpaca.markets/v2';
 
 // ---------------------------
-// Health check & debug endpoint (account info)
+// Health check & debug endpoint
 // ---------------------------
 router.get('/debug', async (req, res) => {
   try {
@@ -63,21 +61,40 @@ router.get('/search', async (req, res) => {
 
 // ---------------------------
 // Historical bars (multi-symbol + timeframe)
-// Example: /api/stocks/bars?symbols=AAPL,MSFT&timeframe=1Day&limit=30
+// Supports optional range=3m|6m|1y
+// Example: /api/stocks/bars?symbols=AAPL&timeframe=1Day&range=6m
 // ---------------------------
 router.get('/bars', async (req, res) => {
   try {
     const symbols = (req.query.symbols || '').toUpperCase();
     const timeframe = req.query.timeframe || '1Day';  // 1Min, 5Min, 1Hour, 1Day
-    const limit = req.query.limit || 30;               // how many bars (default 30 for charts)
+    const range = (req.query.range || '3m').toLowerCase(); // 3m, 6m, 1y
+    const limit = req.query.limit || 300; // enough to plot longer ranges
 
     if (!symbols) return res.json({ bars: {} });
 
-    const url = `${DATA}/stocks/bars?symbols=${encodeURIComponent(symbols)}&timeframe=${timeframe}&limit=${limit}`;
-    const response = await fetch(url, { headers: HEADERS });
-    const json = await response.json();
+    // Define date ranges dynamically
+    const now = new Date();
+    const start = new Date();
+    if (range === '1y') start.setFullYear(start.getFullYear() - 1);
+    else if (range === '6m') start.setMonth(start.getMonth() - 6);
+    else start.setMonth(start.getMonth() - 3); // default 3m
+    const startIso = start.toISOString();
+    const endIso = now.toISOString();
 
-    res.json(json); // { bars: { AAPL: [{t,o,h,l,c,v}, ...], MSFT: [...] } }
+    let url = `${DATA}/stocks/bars?symbols=${encodeURIComponent(symbols)}&timeframe=${timeframe}&start=${startIso}&end=${endIso}&limit=${limit}`;
+    let response = await fetch(url, { headers: HEADERS });
+    let json = await response.json();
+
+    // Fallback if Alpaca gives no data
+    if ((!json.bars || Object.keys(json.bars).length === 0) && timeframe === '1Day') {
+      console.warn(`No ${range} data found for ${symbols} — retrying with 1Hour`);
+      url = `${DATA}/stocks/bars?symbols=${encodeURIComponent(symbols)}&timeframe=1Hour&start=${startIso}&end=${endIso}&limit=${limit}`;
+      response = await fetch(url, { headers: HEADERS });
+      json = await response.json();
+    }
+
+    res.json(json);
   } catch (err) {
     console.error('Bars error:', err);
     res.status(500).json({ error: 'bars-failed', message: err.message });
