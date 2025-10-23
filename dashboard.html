@@ -554,13 +554,6 @@
       return await r.json();
     }
 
-      const startParam = `&start=${startDate.toISOString()}`;
-      const url = `${API_BASE}/api/stocks/bars?symbols=${encodeURIComponent(symbolsCsv)}&timeframe=${tf}&limit=${limitOverride}${startParam}`;
-      
-      const r = await fetch(url);
-      return await r.json();
-    }
-
     async function drawMiniChart(symbol, canvas, timeframe = "1Day") {
       try {
         const data = await fetchBarsMulti(symbol, timeframe, 20);
