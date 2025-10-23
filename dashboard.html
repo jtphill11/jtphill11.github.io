@@ -1098,6 +1098,26 @@
           card.addEventListener("click", e => {
             if (e.target && e.target.id.startsWith("shares-")) return;
 
+            // If the stock has no valid price, prevent selection
+            if (mid == null || mid <= 0) {
+              card.style.borderColor = "red";
+              card.style.transition = "transform 0.1s ease";
+              card.animate(
+                [
+                  { transform: "translateX(0)" },
+                  { transform: "translateX(-5px)" },
+                  { transform: "translateX(5px)" },
+                  { transform: "translateX(0)" }
+                ],
+                { duration: 300 }
+              );
+              setTimeout(() => {
+                card.style.borderColor = "transparent";
+              }, 600);
+              return; // stop selection
+            }
+
+            // Normal toggle behavior
             if (selected[sym]) {
               delete selected[sym];
               card.style.borderColor = "transparent";
@@ -1105,7 +1125,7 @@
             } else {
               selected[sym] = {
                 symbol: sym,
-                name: item.name || sym, // store company name
+                name: item.name || sym,
                 shares: 1,
                 price: mid || 0
               };
@@ -1114,6 +1134,7 @@
             }
             updatePreview();
           });
+
 
           // Live change for fractional shares
           card.addEventListener("input", e => {
@@ -1240,9 +1261,25 @@
       showPopularBtn.addEventListener("click", () => triggerWithCooldown(loadPopular, "popular"));
 
       finalizeBtn.addEventListener("click", async () => {
-        const name = (document.getElementById("basketName").value || "").trim() || "Untitled Basket";
+        const name = (document.getElementById("basketName").value || "").trim();
         const stocks = Object.values(selected);
-        if (stocks.length === 0) return alert("Select at least one stock.");
+
+        // Require a basket name
+        if (!name) {
+          alert("Please enter a basket name before finalizing.");
+          return;
+        }
+        // Require at least one stock
+        if (stocks.length === 0) {
+          alert("Select at least one stock before finalizing.");
+          return;
+        }
+        // Each stock must total at least $1 (price × shares)
+        const invalids = stocks.filter(s => (s.price * s.shares) < 1);
+        if (invalids.length > 0) {
+          alert("Each stock must have at least $1 in total value before creating the basket.");
+          return;
+        }
         try {
           const res = await fetch(`${API_BASE}/api/baskets/create`, {
             method: "POST",
