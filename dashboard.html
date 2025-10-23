@@ -411,7 +411,7 @@
     const API_BASE = "https://api.bullride.us";
 
     // ---------- Mini helpers for charts & math ----------
-    const activeCharts = {}; let drawLock = false;
+    const activeCharts = {};
 
     async function fetchBarsMulti(symbolsCsv, timeframe = "1Day", limit = 20) {
       const startParam = (timeframe === "1Day")
@@ -422,124 +422,44 @@
       return await r.json();
     }
 
-    function clearAllMiniCharts() {
-      for (const key in activeCharts) {
-        if (key.endsWith("_interval")) {
-          clearInterval(activeCharts[key]);
-        } else if (activeCharts[key].destroy) {
-          activeCharts[key].destroy();
-        }
-        delete activeCharts[key];
-      }
-    }
-
     async function drawMiniChart(symbol, canvas, timeframe = "1Day") {
       try {
-        if (drawLock) return;
-        // Fetch last N bars
         const data = await fetchBarsMulti(symbol, timeframe, 20);
         const arr = data?.bars?.[symbol] || [];
         if (arr.length === 0) return;
 
-        // --- Fix timestamp alignment for 1Day ---
-        const labels = arr.map(b => {
-          const d = new Date(b.t);
-          if (timeframe === "1Day") d.setDate(d.getDate() + 1);
-          return d.toLocaleDateString("en-US", {
-            month: "short",
-            day: "numeric",
-            timeZone: "America/Chicago"
-          });
-        });
-
+        const labels = arr.map(b => (b.t || '').slice(5, 10));
         const values = arr.map(b => b.c);
+
         const ctx = canvas.getContext("2d");
 
-        // --- Determine market color logic ---
-        let borderColor = "#00FF7F"; // default green
-
-        // Check if after market hours (4 PM ET–8:30 AM ET)
-        const now = new Date();
-        const nowET = new Date(
-          now.toLocaleString("en-US", { timeZone: "America/New_York" })
-        );
-        const hoursET = nowET.getHours() + nowET.getMinutes() / 60;
-        const isAfterHours = hoursET >= 16 || hoursET < 8.5;
-
-        if (isAfterHours) {
-          borderColor = "#FFD700"; // yellow for after hours
-        } else if (values.length >= 2) {
-          const first = values[0];
-          const last = values[values.length - 1];
-          borderColor = last < first ? "#FF5555" : "#00FF7F"; // red or green
-        }
-
-        // --- If chart exists, update data & color ---
+        // If chart already exists, just update data
         if (activeCharts[symbol]) {
-          const chart = activeCharts[symbol];
-          chart.data.labels = labels;
-          chart.data.datasets[0].data = values;
-          chart.data.datasets[0].borderColor = borderColor;
-          chart.update();
-        } else {
-          // --- Otherwise, create new chart ---
-          activeCharts[symbol] = new Chart(ctx, {
-            type: "line",
-            data: {
-              labels,
-              datasets: [{
-                data: values,
-                borderColor,
-                fill: false,
-                tension: 0.3
-              }]
-            },
-            options: {
-              responsive: true,
-              plugins: { legend: { display: false } },
-              scales: { x: { display: false }, y: { display: false } },
-              elements: { point: { radius: 0 } }
-            }
-          });
+          activeCharts[symbol].data.labels = labels;
+          activeCharts[symbol].data.datasets[0].data = values;
+          activeCharts[symbol].update();
+          return;
         }
 
-        // --- LIVE UPDATE SECTION ---
-        if (!activeCharts[symbol + "_interval"]) {
-          activeCharts[symbol + "_interval"] = setInterval(async () => {
-            try {
-              const res = await fetch(`${API_BASE}/api/stocks/search?q=${symbol}`);
-              const qData = await res.json();
-              const quote = qData[0]?.quote || {};
-              const mid = quote.bp && quote.ap ? (quote.bp + quote.ap) / 2 : (quote.ap ?? quote.bp ?? null);
-
-              if (mid && activeCharts[symbol]) {
-                const chart = activeCharts[symbol];
-                const lastIndex = chart.data.datasets[0].data.length - 1;
-                chart.data.datasets[0].data[lastIndex] = mid;
-
-                // Update color logic again after refresh
-                const vals = chart.data.datasets[0].data;
-                const firstVal = vals[0];
-                const lastVal = vals[vals.length - 1];
-
-                const now = new Date();
-                const nowET = new Date(now.toLocaleString("en-US", { timeZone: "America/New_York" }));
-                const hoursET = nowET.getHours() + nowET.getMinutes() / 60;
-                const isAfterHours = hoursET >= 16 || hoursET < 8.5;
-
-                chart.data.datasets[0].borderColor = isAfterHours
-                  ? "#FFD700"
-                  : lastVal < firstVal
-                  ? "#FF5555"
-                  : "#00FF7F";
-
-                chart.update("none"); // smooth refresh
-              }
-            } catch (err) {
-              console.error(`Live update failed for ${symbol}:`, err);
-            }
-          }, 10_000);
-        }
+        // Otherwise, create it
+        activeCharts[symbol] = new Chart(ctx, {
+          type: 'line',
+          data: {
+            labels,
+            datasets: [{
+              data: values,
+              borderColor: '#00ff7f',
+              fill: false,
+              tension: 0.3
+            }]
+          },
+          options: {
+            responsive: true,
+            plugins: { legend: { display: false } },
+            scales: { x: { display: false }, y: { display: false } },
+            elements: { point: { radius: 0 } }
+          }
+        });
       } catch (err) {
         console.error(`Chart error for ${symbol}:`, err);
       }
@@ -919,62 +839,12 @@
       let selected = {};
       let currentTimeframe = tfSelect.value;
 
-    async function loadPopular() {
-      const showPopularBtn = document.getElementById("showPopularBtn");
-      if (!showPopularBtn) return;
-
-      // Disable button to prevent spam clicks
-      showPopularBtn.disabled = true;
-      showPopularBtn.textContent = "Loading...";
-
-      // Clear any existing charts first
-      clearAllMiniCharts();
-      stocksGrid.innerHTML = `<p>Loading popular stocks...</p>`;
-
-      try {
+      async function loadPopular() {
+        stocksGrid.innerHTML = `<p>Loading popular stocks...</p>`;
         const res = await fetch(`${API_BASE}/api/stocks/popular`);
-        const list = await res.json();
-
-        if (!Array.isArray(list) || list.length === 0) {
-          stocksGrid.innerHTML = `<p style="opacity:0.8;">No results.</p>`;
-          return;
-        }
-
-        stocksGrid.innerHTML = "";
-        list.forEach(item => {
-          const sym = item.symbol;
-          const bid = item?.quote?.bp ?? null;
-          const ask = item?.quote?.ap ?? null;
-          const mid = (bid && ask) ? ((bid + ask) / 2) : (bid ?? ask ?? null);
-
-          const card = document.createElement("div");
-          card.style.cssText = `
-            background:rgba(255,255,255,0.05);
-            border:1px solid rgba(255,255,255,0.1);
-            border-radius:10px;
-            padding:1rem;cursor:pointer;transition:all .2s ease;
-          `;
-          card.innerHTML = `
-            <div style="display:flex;align-items:baseline;justify-content:space-between;gap:8px;">
-              <h3 style="margin:0;">${sym}</h3>
-              <span style="opacity:.8;">${mid ? `$${mid.toFixed(2)}` : '—'}</span>
-            </div>
-            <canvas id="mini-${sym}" height="120"></canvas>
-          `;
-          stocksGrid.appendChild(card);
-
-          const canvas = card.querySelector(`#mini-${sym}`);
-          drawMiniChart(sym, canvas, currentTimeframe);
-        });
-      } catch (err) {
-        console.error("Error loading popular stocks:", err);
-        stocksGrid.innerHTML = `<p style="color:red;">Failed to load popular stocks.</p>`;
-      } finally {
-        showPopularBtn.disabled = false;
-        showPopularBtn.textContent = "Show Popular";
+        const list = await res.json(); // [{symbol, quote}]
+        renderStocks(list);
       }
-    }
-
 
     async function search() {
       const q = document.getElementById("stockSearch").value.trim();
@@ -1110,30 +980,14 @@
       }
 
       // actions
-      tfSelect.addEventListener("change", async () => {
-        if (drawLock) return; // prevent overlapping fetches
-        drawLock = true;
-
-        const newTimeframe = tfSelect.value;
-        currentTimeframe = newTimeframe;
-
-        // clear previous intervals and charts
-        clearAllMiniCharts();
-
-        // visually indicate reload
-        stocksGrid.style.opacity = 0.4;
-
-        // Re-draw all currently visible canvases
-        const cards = Array.from(stocksGrid.querySelectorAll("canvas[id^='mini-']"));
-        for (const canvas of cards) {
-          const sym = canvas.id.replace("mini-", "");
-          await drawMiniChart(sym, canvas, newTimeframe);
-        }
-
-        stocksGrid.style.opacity = 1;
-        drawLock = false;
+      tfSelect.addEventListener("change", () => {
+        currentTimeframe = tfSelect.value;
+        // redraw all visible cards
+        document.querySelectorAll("canvas[id^='mini-']").forEach(cv => {
+          const sym = cv.id.replace("mini-",""); 
+          drawMiniChart(sym, cv, currentTimeframe);
+        });
       });
-
       searchBtn.addEventListener("click", search);
       showPopularBtn.addEventListener("click", loadPopular);
 
@@ -1236,6 +1090,7 @@
     document.getElementById("adminBtn").addEventListener("click", () => {
       window.location.href = "https://bullride.us/bradminlc_1.html";
     });
+
 
   </script>
 </body>
