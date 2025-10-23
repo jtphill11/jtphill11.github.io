@@ -13,7 +13,9 @@ const HEADERS = {
 const DATA  = process.env.ALPACA_DATA_URL || 'https://data.alpaca.markets/v2';
 const PAPER = 'https://paper-api.alpaca.markets/v2';
 
+// ---------------------------
 // Health check & debug endpoint (account info)
+// ---------------------------
 router.get('/debug', async (req, res) => {
   try {
     const response = await fetch(`${PAPER}/account`, { headers: HEADERS });
@@ -25,7 +27,9 @@ router.get('/debug', async (req, res) => {
   }
 });
 
-// Popular tickers
+// ---------------------------
+// Popular tickers (top 10 tech)
+// ---------------------------
 router.get('/popular', async (_req, res) => {
   const pop = ['AAPL','MSFT','GOOGL','AMZN','META','TSLA','NVDA','AMD','INTC','NFLX'];
   try {
@@ -40,7 +44,9 @@ router.get('/popular', async (_req, res) => {
   }
 });
 
-// Search tickers
+// ---------------------------
+// Search tickers (by symbol)
+// ---------------------------
 router.get('/search', async (req, res) => {
   const q = (req.query.q || '').toUpperCase();
   if (!q) return res.json([]);
@@ -52,6 +58,29 @@ router.get('/search', async (req, res) => {
   } catch (err) {
     console.error('Search error:', err);
     res.status(500).json({ error: 'search-failed', message: err.message });
+  }
+});
+
+// ---------------------------
+// Historical bars (multi-symbol + timeframe)
+// Example: /api/stocks/bars?symbols=AAPL,MSFT&timeframe=1Day&limit=30
+// ---------------------------
+router.get('/bars', async (req, res) => {
+  try {
+    const symbols = (req.query.symbols || '').toUpperCase();
+    const timeframe = req.query.timeframe || '1Day';  // 1Min, 5Min, 1Hour, 1Day
+    const limit = req.query.limit || 30;               // how many bars (default 30 for charts)
+
+    if (!symbols) return res.json({ bars: {} });
+
+    const url = `${DATA}/stocks/bars?symbols=${encodeURIComponent(symbols)}&timeframe=${timeframe}&limit=${limit}`;
+    const response = await fetch(url, { headers: HEADERS });
+    const json = await response.json();
+
+    res.json(json); // { bars: { AAPL: [{t,o,h,l,c,v}, ...], MSFT: [...] } }
+  } catch (err) {
+    console.error('Bars error:', err);
+    res.status(500).json({ error: 'bars-failed', message: err.message });
   }
 });
 
