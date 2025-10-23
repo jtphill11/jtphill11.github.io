@@ -313,6 +313,76 @@
 
     body.light-mode .toggle-btn { background: #000; }
     body.light-mode .toggle-dot { background: #fff; }
+
+    /* ---- Modern Input & Button Styles ---- */
+
+    input[type="number"], 
+    input[type="text"], 
+    select {
+      background: rgba(255,255,255,0.08);
+      border: none;
+      color: #fff;
+      border-radius: 8px;
+      padding: 0.6rem 0.8rem;
+      outline: none;
+      transition: background 0.3s ease;
+      font-family: 'Inter', sans-serif;
+      font-size: 0.95rem;
+    }
+
+    input[type="number"]:focus, 
+    input[type="text"]:focus {
+      background: rgba(255,255,255,0.12);
+    }
+
+    /* Reusable clean input class */
+    .input-dark {
+      background: rgba(255,255,255,0.08);
+      border: none;
+      color: #fff;
+      border-radius: 8px;
+      padding: 0.6rem 0.8rem;
+      width: 260px;
+      outline: none;
+    }
+    .input-dark:focus {
+      background: rgba(255,255,255,0.12);
+    }
+
+    /* Modern Button */
+    .button-modern {
+      background: none;
+      border: 1px solid #fff;
+      color: #fff;
+      border-radius: 8px;
+      padding: 0.7rem 1.2rem;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-weight: 500;
+    }
+    .button-modern:hover {
+      background: #fff;
+      color: #000;
+      box-shadow: 0 0 10px #fff;
+    }
+
+    /* Light Mode Adjustments */
+    body.light-mode input[type="number"],
+    body.light-mode input[type="text"],
+    body.light-mode .input-dark {
+      background: rgba(0,0,0,0.05);
+      color: #000;
+    }
+    body.light-mode .button-modern {
+      border: 1px solid #000;
+      color: #000;
+    }
+    body.light-mode .button-modern:hover {
+      background: #000;
+      color: #fff;
+      box-shadow: 0 0 10px rgba(0,0,0,0.3);
+    }
+
   </style>
 
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -704,7 +774,7 @@
         <p class="lead">Your custom ETF baskets.</p>
 
         <section id="basketsGrid"
-          style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:2rem;">
+          style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:1.6rem;margin-top:1rem;">
           <p>Loading baskets...</p>
         </section>
       `;
@@ -724,29 +794,48 @@
           baskets.forEach(b => {
             const card = document.createElement("div");
             card.style.cssText = `
-              background:rgba(255,255,255,0.05);
-              padding:1.5rem;
-              border-radius:12px;
-              border:1px solid rgba(255,255,255,0.1);
+              background:rgba(255,255,255,0.06);
+              padding:1.4rem 1.6rem;
+              border-radius:14px;
+              border:1px solid rgba(255,255,255,0.15);
               text-align:center;
-              transition:all 0.3s ease;
+              transition:transform .2s ease, box-shadow .2s ease;
+              cursor:pointer;
             `;
+
+            // Hover animation
+            card.addEventListener("mouseenter", () => {
+              card.style.boxShadow = "0 0 12px rgba(255,255,255,0.25)";
+              card.style.transform = "translateY(-3px)";
+            });
+            card.addEventListener("mouseleave", () => {
+              card.style.boxShadow = "none";
+              card.style.transform = "none";
+            });
+
+            const inactive = b.active === false ? " (inactive)" : "";
+
             card.innerHTML = `
-              <h3>${b.name} ${b.active === false ? "(inactive)" : ""}</h3>
-              <p>${b.stocks.length} stock${b.stocks.length !== 1 ? "s" : ""}</p>
-              <button class="delete-basket"
-                style="margin-top:1rem;padding:0.6rem 1rem;border:none;
-                border-radius:6px;background:#fff;color:#000;cursor:pointer;">
+              <h3 style="margin:0 0 .5rem 0;font-size:1.25rem;font-weight:600;">
+                ${b.name}${inactive}
+              </h3>
+              <p style="margin:0 0 .5rem 0;opacity:.9;">
+                ${b.stocks.length} stock${b.stocks.length !== 1 ? "s" : ""}
+              </p>
+              <button class="delete-basket button-modern"
+                style="margin-top:0.8rem;width:100%;">
                 Delete Basket
               </button>
             `;
 
             // Delete basket → soft delete (sets active=false)
             const delBtn = card.querySelector(".delete-basket");
-            delBtn.addEventListener("click", async () => {
+            delBtn.addEventListener("click", async (e) => {
+              e.stopPropagation();
               if (!confirm("Delete this basket? It will become inactive.")) return;
               try {
-                await fetch(`${API_BASE}/api/baskets/${b.basketId}`, { method: "DELETE" });
+                const res = await fetch(`${API_BASE}/api/baskets/${b.basketId}`, { method: "DELETE" });
+                if (!res.ok) throw new Error("Failed to delete");
                 alert("Basket marked inactive.");
                 document.getElementById("creationsBtn").click(); // reload list
               } catch (err) {
@@ -764,19 +853,31 @@
         // --- Create New Basket button ---
         const create = document.createElement("div");
         create.style.cssText = `
-          display:flex;align-items:center;justify-content:center;
+          display:flex;
+          align-items:center;
+          justify-content:center;
           border:2px dashed rgba(255,255,255,0.3);
-          border-radius:12px;
-          cursor:pointer;transition:all 0.3s ease;height:150px;
+          border-radius:14px;
+          cursor:pointer;
+          transition:all 0.3s ease;
+          height:150px;
+          background:rgba(255,255,255,0.03);
         `;
         create.innerHTML = `<span style="font-size:1.2rem;opacity:0.8;">+ Create New Basket</span>`;
-        create.addEventListener("mouseenter", () => { create.style.background = "rgba(255,255,255,0.05)"; });
-        create.addEventListener("mouseleave", () => { create.style.background = "none"; });
+
+        create.addEventListener("mouseenter", () => {
+          create.style.background = "rgba(255,255,255,0.06)";
+          create.style.boxShadow = "0 0 10px rgba(255,255,255,0.15)";
+        });
+        create.addEventListener("mouseleave", () => {
+          create.style.background = "rgba(255,255,255,0.03)";
+          create.style.boxShadow = "none";
+        });
 
         // Open visual basket builder
         create.addEventListener("click", async () => {
           const userNow = await userManager.getUser();
-          openBasketBuilder(userNow); // uses your new builder function
+          openBasketBuilder(userNow); // your builder function
         });
 
         grid.appendChild(create);
@@ -795,30 +896,57 @@
         <h1>My Investments</h1>
         <p class="lead">Baskets you've purchased or invested in — your active portfolio overview.</p>
 
-        <section style="display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:2rem;">
-          <div style="background:rgba(255,255,255,0.05);padding:1.5rem;border-radius:12px;border:1px solid rgba(255,255,255,0.1);">
-            <h3>AI Innovators Fund</h3>
-            <p>Created by @sophia</p>
-            <p style="margin-top:0.5rem;">Return: <strong style="color:lightgreen;">+8.7%</strong></p>
-            <button style="margin-top:1rem;padding:0.6rem 1rem;border:none;border-radius:6px;background:#fff;color:#000;cursor:pointer;">View Details</button>
-          </div>
-
-          <div style="background:rgba(255,255,255,0.05);padding:1.5rem;border-radius:12px;border:1px solid rgba(255,255,255,0.1);">
-            <h3>Green Energy Growth</h3>
-            <p>Created by You</p>
-            <p style="margin-top:0.5rem;">Return: <strong style="color:lightgreen;">+2.1%</strong></p>
-            <button style="margin-top:1rem;padding:0.6rem 1rem;border:none;border-radius:6px;background:#fff;color:#000;cursor:pointer;">View Details</button>
-          </div>
-
-          <div style="background:rgba(255,255,255,0.05);padding:1.5rem;border-radius:12px;border:1px solid rgba(255,255,255,0.1);">
-            <h3>Tech Titans Basket</h3>
-            <p>Created by You</p>
-            <p style="margin-top:0.5rem;">Return: <strong style="color:red;">-1.4%</strong></p>
-            <button style="margin-top:1rem;padding:0.6rem 1rem;border:none;border-radius:6px;background:#fff;color:#000;cursor:pointer;">View Details</button>
-          </div>
+        <section id="investmentsGrid"
+          style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:1.6rem;margin-top:1rem;">
         </section>
       `;
+
+      const grid = document.getElementById("investmentsGrid");
+
+      // (Static sample data for now — later will be replaced with user portfolio fetch)
+      const sample = [
+        { name: "AI Innovators Fund", creator: "@sophia", gain: +8.7 },
+        { name: "Green Energy Growth", creator: "You", gain: +2.1 },
+        { name: "Tech Titans Basket", creator: "You", gain: -1.4 },
+      ];
+
+      sample.forEach(item => {
+        const card = document.createElement("div");
+        card.style.cssText = `
+          background:rgba(255,255,255,0.06);
+          padding:1.4rem 1.6rem;
+          border-radius:14px;
+          border:1px solid rgba(255,255,255,0.15);
+          transition:transform .2s ease, box-shadow .2s ease;
+          cursor:pointer;
+        `;
+
+        // Hover glow
+        card.addEventListener("mouseenter", () => {
+          card.style.boxShadow = "0 0 12px rgba(255,255,255,0.25)";
+          card.style.transform = "translateY(-3px)";
+        });
+        card.addEventListener("mouseleave", () => {
+          card.style.boxShadow = "none";
+          card.style.transform = "none";
+        });
+
+        const gainColor = item.gain >= 0 ? "lightgreen" : "salmon";
+        const sign = item.gain >= 0 ? "+" : "";
+
+        card.innerHTML = `
+          <h3 style="margin:0 0 .5rem 0;font-size:1.25rem;font-weight:600;">${item.name}</h3>
+          <p style="opacity:.85;margin:0 0 .6rem 0;font-size:0.95rem;">Created by ${item.creator}</p>
+          <p style="margin:0 0 .8rem 0;font-size:1rem;">
+            Return: <strong style="color:${gainColor}">${sign}${item.gain.toFixed(1)}%</strong>
+          </p>
+          <button class="button-modern" style="width:100%;">View Details</button>
+        `;
+
+        grid.appendChild(card);
+      });
     });
+
 
     // Basket open
     async function openBasketBuilder(user) {
@@ -934,6 +1062,7 @@
           stocksGrid.innerHTML = `<p style="opacity:0.8;">No results.</p>`;
           return;
         }
+
         list.forEach(item => {
           const sym = item.symbol;
           const bid = item?.quote?.bp ?? null;
@@ -941,62 +1070,62 @@
           const mid = (bid && ask) ? ((bid + ask) / 2) : (bid ?? ask ?? null);
 
           const card = document.createElement("div");
+          card.className = "stock-card";
           card.style.cssText = `
             background:rgba(255,255,255,0.05);
-            border:1px solid rgba(255,255,255,0.1);
-            border-radius:10px;
-            padding:1rem;cursor:pointer;transition:all .2s ease;
+            border:2px solid transparent;
+            border-radius:12px;
+            padding:1rem;
+            cursor:pointer;
+            transition:all .2s ease;
           `;
-          card.classList.toggle("selected", !!selected[sym]);
+
           card.innerHTML = `
             <div style="display:flex;align-items:baseline;justify-content:space-between;gap:8px;">
               <h3 style="margin:0;">${sym}</h3>
               <span style="opacity:.8;">${mid ? `$${mid.toFixed(2)}` : '—'}</span>
             </div>
             <canvas id="mini-${sym}" height="120"></canvas>
-            <div style="display:${selected[sym] ? 'block' : 'none'};margin-top:8px;">
+            <div class="shares-row" style="display:none;margin-top:8px;">
               <label style="opacity:.8;font-size:.9rem;">Shares:</label>
-              <input type="number" min="1" value="${selected[sym]?.shares ?? 1}" id="shares-${sym}"
-                     style="width:80px;padding:.4rem;border-radius:6px;border:none;margin-left:8px;">
+              <input type="number" min="0.01" step="0.01" value="${selected[sym]?.shares ?? 1}" id="shares-${sym}"
+                style="width:100px;padding:.5rem;border-radius:8px;border:none;
+                       background:rgba(255,255,255,0.08);color:#fff;margin-left:8px;">
             </div>
           `;
-          card.addEventListener("click", (e) => {
-            // Don't toggle when changing shares (stop bubbling)
-            if (e.target && String(e.target.id).startsWith("shares-")) return;
+
+          // Toggle selection
+          card.addEventListener("click", e => {
+            if (e.target && e.target.id.startsWith("shares-")) return;
 
             if (selected[sym]) {
               delete selected[sym];
-              card.classList.remove("selected");
-              // hide shares row
-              const sharesRow = card.querySelector(`#shares-${sym}`)?.parentElement;
-              if (sharesRow) sharesRow.style.display = "none";
+              card.style.borderColor = "transparent";
+              card.querySelector(".shares-row").style.display = "none";
             } else {
               selected[sym] = { symbol: sym, shares: 1, price: mid || 0 };
-              card.classList.add("selected");
-              const sharesRow = card.querySelector(`#shares-${sym}`)?.parentElement;
-              if (sharesRow) sharesRow.style.display = "block";
+              card.style.borderColor = "#00FF7F"; // bright green border
+              card.querySelector(".shares-row").style.display = "block";
             }
             updatePreview();
           });
 
-          stocksGrid.appendChild(card);
-
-          // Draw chart
-          const canvas = card.querySelector(`#mini-${sym}`);
-          drawMiniChart(sym, canvas, currentTimeframe);
-
-          // Live-change shares
-          card.addEventListener("change", (e) => {
-            if (e.target && e.target.id === `shares-${sym}`) {
-              const v = parseInt(e.target.value || "1", 10);
-              if (selected[sym]) selected[sym].shares = Math.max(1, v);
+          // Live change for fractional shares
+          card.addEventListener("input", e => {
+            if (e.target.id === `shares-${sym}`) {
+              const v = parseFloat(e.target.value || "1");
+              if (selected[sym]) selected[sym].shares = Math.max(0.01, v);
               updatePreview();
             }
           });
+
+          stocksGrid.appendChild(card);
+          drawMiniChart(sym, card.querySelector(`#mini-${sym}`), currentTimeframe);
         });
 
         tfSelect.dispatchEvent(new Event("change"));
       }
+
 
       function updatePreview() {
         const entries = Object.values(selected);
@@ -1005,14 +1134,23 @@
           finalizeBtn.style.display = "none";
           return;
         }
+
+        let total = 0;
+        const rows = entries.map(s => {
+          const est = s.price * s.shares;
+          total += est;
+          return `
+            <div>${s.symbol}</div>
+            <div>${s.shares.toFixed(2)}</div>
+            <div>$${est.toFixed(2)}</div>
+          `;
+        }).join("");
+
         previewList.innerHTML = `
           <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:.6rem;">
-            <strong>Symbol</strong><strong>Shares</strong><strong>Est. Price</strong>
-            ${entries.map(s => `
-              <div>${s.symbol}</div>
-              <div>${s.shares}</div>
-              <div>${s.price ? `$${Number(s.price).toFixed(2)}` : '—'}</div>
-            `).join("")}
+            <strong>Symbol</strong><strong>Shares</strong><strong>Est. Value</strong>
+            ${rows}
+            <div></div><strong>Total</strong><strong>$${total.toFixed(2)}</strong>
           </div>
         `;
         finalizeBtn.style.display = "inline-block";
@@ -1091,64 +1229,92 @@
       main.innerHTML = `
         <h1>Explore</h1>
         <p class="lead">Public baskets across all users, sorted by biggest gainers.</p>
-        <section id="exploreGrid" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:1.2rem;">
+        <section id="exploreGrid"
+          style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:1.6rem;margin-top:1rem;">
           <p>Loading baskets...</p>
         </section>
       `;
+
       const grid = document.getElementById("exploreGrid");
 
       try {
         const res = await fetch(`${API_BASE}/api/baskets/explore`);
         let baskets = await res.json();
 
-        // Show both active + inactive (public). You said everyone should see them.
-        // To sort by biggest gainers, we estimate each basket's 1-day % change using latest bars.
-        // 1) collect all unique symbols (cap to avoid huge query)
-        const allSyms = Array.from(new Set(
-          baskets.flatMap(b => (b.stocks || []).map(s => s.symbol))
-        )).slice(0, 120);
-        // 2) fetch bars in batch and compute last close change per symbol
-        const barData = await fetchBarsMulti(allSyms.join(','), "1Day", 2); // 2 last days
+        // Collect all unique symbols (cap at 120)
+        const allSyms = Array.from(
+          new Set(baskets.flatMap(b => (b.stocks || []).map(s => s.symbol)))
+        ).slice(0, 120);
+
+        // Fetch latest bars for those symbols
+        const barData = await fetchBarsMulti(allSyms.join(','), "1Day", 2);
         const lastChangeBySymbol = {};
+
         for (const s of allSyms) {
           const arr = barData?.bars?.[s] || [];
-          const len = arr.length;
-          if (len >= 2) {
-            const yClose = arr[len-2].c;
-            const tClose = arr[len-1].c;
-            lastChangeBySymbol[s] = pctChange(yClose, tClose); // % change
-          } else {
-            lastChangeBySymbol[s] = 0;
-          }
+          if (arr.length >= 2) {
+            const yClose = arr[arr.length - 2].c;
+            const tClose = arr[arr.length - 1].c;
+            lastChangeBySymbol[s] = pctChange(yClose, tClose);
+          } else lastChangeBySymbol[s] = 0;
         }
-        // 3) compute basket change as weighted (by shares) average of symbol changes
+
+        // Compute basket % change (weighted by shares)
         baskets.forEach(b => {
-          const comps = (b.stocks || []);
-          const totalShares = comps.reduce((a,c) => a + (Number(c.shares)||0), 0) || 1;
-          const score = comps.reduce((acc, c) => acc + (lastChangeBySymbol[c.symbol] || 0) * (Number(c.shares)||0), 0) / totalShares;
+          const comps = b.stocks || [];
+          const totalShares = comps.reduce((a, c) => a + (Number(c.shares) || 0), 0) || 1;
+          const score = comps.reduce(
+            (acc, c) => acc + (lastChangeBySymbol[c.symbol] || 0) * (Number(c.shares) || 0),
+            0
+          ) / totalShares;
           b._gainPct = score;
         });
 
-        // 4) sort desc by gain
-        baskets.sort((a,b) => (b._gainPct||0) - (a._gainPct||0));
+        // Sort by biggest gainers
+        baskets.sort((a, b) => (b._gainPct || 0) - (a._gainPct || 0));
 
-        // 5) render
+        // Render cards
         grid.innerHTML = "";
         baskets.forEach(b => {
           const card = document.createElement("div");
           card.style.cssText = `
-            background:rgba(255,255,255,0.05);
-            border:1px solid rgba(255,255,255,0.1);
-            border-radius:10px;padding:1rem;
+            background:rgba(255,255,255,0.06);
+            padding:1.4rem 1.6rem;
+            border-radius:14px;
+            border:1px solid rgba(255,255,255,0.15);
+            transition:transform .2s ease, box-shadow .2s ease;
+            cursor:pointer;
           `;
-          const tag = (b.active === false) ? " (inactive)" : "";
-          const gainColor = (b._gainPct||0) >= 0 ? "lightgreen" : "salmon";
+
+          // Hover glow
+          card.addEventListener("mouseenter", () => {
+            card.style.boxShadow = "0 0 12px rgba(255,255,255,0.25)";
+            card.style.transform = "translateY(-3px)";
+          });
+          card.addEventListener("mouseleave", () => {
+            card.style.boxShadow = "none";
+            card.style.transform = "none";
+          });
+
+          const tag = b.active === false ? " (inactive)" : "";
+          const gainColor = (b._gainPct || 0) >= 0 ? "lightgreen" : "salmon";
+
           card.innerHTML = `
-            <h3 style="margin:0 0 .4rem 0;">${b.name}${tag}</h3>
-            <p style="opacity:.85;margin:0 0 .6rem 0;">By ${b.userEmail}</p>
-            <p style="margin:0 0 .6rem 0;">${b.stocks.length} stock${b.stocks.length !== 1 ? "s" : ""}</p>
-            <p style="margin:0;">Est. 1D Change: <strong style="color:${gainColor}">${(b._gainPct||0).toFixed(2)}%</strong></p>
+            <h3 style="margin:0 0 .5rem 0;font-size:1.25rem;font-weight:600;">
+              ${b.name}${tag}
+            </h3>
+            <p style="opacity:.85;margin:0 0 .6rem 0;font-size:0.95rem;">
+              <strong>By:</strong> ${b.userEmail}
+            </p>
+            <p style="margin:0 0 .6rem 0;opacity:.9;">
+              <strong>${b.stocks.length}</strong> stock${b.stocks.length !== 1 ? "s" : ""}
+            </p>
+            <p style="margin:0;font-size:1rem;">
+              Est. 1D Change:
+              <strong style="color:${gainColor}">${(b._gainPct || 0).toFixed(2)}%</strong>
+            </p>
           `;
+
           grid.appendChild(card);
         });
       } catch (e) {
@@ -1156,6 +1322,7 @@
         grid.innerHTML = "<p style='color:red;'>Failed to load explore baskets.</p>";
       }
     });
+
 
     // --- ADMIN PANEL BUTTON (redirect to admin page) ---
     document.getElementById("adminBtn").addEventListener("click", () => {
