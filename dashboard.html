@@ -21,125 +21,385 @@
 
     /* Sidebar */
     .sidebar {
-      position: fixed; top: 0; left: 0;
-      width: 260px; height: 100vh;
+      position: fixed;
+      top: 0; left: 0;
+      width: 260px;
+      height: 100vh;
       background: rgba(255,255,255,0.05);
       backdrop-filter: blur(12px);
       border-right: 1px solid rgba(255,255,255,0.1);
-      display: flex; flex-direction: column; align-items: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
       padding: 2rem 1rem;
-      transition: transform 0.4s ease;
+      transform: translateX(0);
+      transition: transform 0.4s ease, background 0.4s ease, border 0.4s ease;
       z-index: 200;
     }
+
     .sidebar.hidden { transform: translateX(-100%); }
 
-    .sidebar img { width: 140px; margin-bottom: 2rem; filter: brightness(1.5); }
+    .sidebar img {
+      width: 140px;
+      margin-bottom: 2rem;
+      filter: brightness(1.5);
+      transition: filter 0.4s ease;
+    }
+
     .sidebar .button {
-      background: none; border: 1px solid #fff; color: #fff;
-      width: 100%; padding: 0.8rem; margin-bottom: 1rem;
-      border-radius: 8px; text-align: center; cursor: pointer;
-      transition: all 0.3s ease;
-    }
-    .sidebar .button:hover { background: #fff; color: #000; }
-
-    .toggle-btn { position: fixed; top: 25px; left: 20px; background: #fff;
-      width: 32px; height: 32px; border-radius: 50%;
-      display: flex; align-items: center; justify-content: center;
-      cursor: pointer; z-index: 300;
-    }
-    .toggle-dot { width: 10px; height: 10px; background: #000; border-radius: 50%; }
-
-    .profile { position: fixed; top: 20px; right: 70px; width: 45px; height: 45px;
-      border-radius: 50%; background: #fff; color: #000;
-      display: flex; align-items: center; justify-content: center;
-      font-weight: 600; cursor: pointer; z-index: 300;
-    }
-
-    .profile-menu {
-      position: absolute; top: 70px; right: 30px;
-      background: rgba(255,255,255,0.1);
-      border-radius: 10px; backdrop-filter: blur(12px);
-      display: none; flex-direction: column; width: 180px;
-    }
-    .profile-menu.active { display: flex; }
-    .profile-menu button { background: none; border: none; color: #fff;
-      padding: 0.9rem; text-align: left; cursor: pointer;
-    }
-    .profile-menu button:hover { background: rgba(255,255,255,0.15); }
-
-    main { margin-left: 280px; padding: 4rem 3rem; transition: margin-left 0.4s ease; }
-    .sidebar.hidden ~ main { margin-left: 0; }
-
-    h1 { font-size: 2.8rem; font-weight: 600; margin-bottom: 1rem; }
-    .lead { font-size: 1.2rem; color: #aaa; margin-bottom: 2rem; }
-
-    /* STOCK GRID */
-    .stock-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit,minmax(220px,1fr));
-      gap: 1.5rem;
-    }
-
-    .stock-card {
-      background: rgba(255,255,255,0.05);
-      border-radius: 10px;
-      padding: 1rem;
-      border: 1px solid rgba(255,255,255,0.1);
-      transition: all 0.3s ease;
+      background: none;
+      border: 1px solid #fff;
+      color: #fff;
+      width: 100%;
+      padding: 0.8rem;
+      margin-bottom: 1rem;
       cursor: pointer;
+      transition: all 0.3s ease;
+      border-radius: 8px;
+      text-align: center;
     }
-    .stock-card.selected { border: 2px solid lime; background: rgba(0,255,0,0.1); }
-    .stock-card:hover { transform: translateY(-3px); }
 
-    canvas { width: 100%; height: 120px; margin-top: 0.5rem; }
-
-    button.primary {
-      padding: 0.8rem 1.5rem;
+    .sidebar .button:hover {
       background: #fff;
-      border: none;
+      color: #000;
+      transform: translateY(-2px);
+      box-shadow: 0 0 10px #fff;
+    }
+
+    /* Toggle Button */
+    .toggle-btn {
+      position: fixed;
+      top: 25px;
+      left: 20px;
+      background: #fff;
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      z-index: 300;
+      transition: transform 0.3s ease, background 0.3s ease;
+    }
+
+    .toggle-btn:hover { transform: scale(1.1); }
+
+    .toggle-dot {
+      width: 10px;
+      height: 10px;
+      background: #000;
+      border-radius: 50%;
+      transition: transform 0.3s ease, background 0.3s ease;
+    }
+
+    /* Profile icon */
+    .profile {
+      position: fixed;
+      top: 20px;
+      right: 70px;
+      width: 45px;
+      height: 45px;
+      border-radius: 50%;
+      background: #fff;
       color: #000;
       font-weight: 600;
-      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
       cursor: pointer;
-      transition: all 0.3s ease;
-      margin-top: 1.5rem;
+      font-size: 1rem;
+      z-index: 300;
+      transition: transform 0.3s ease, background 0.4s ease, color 0.4s ease;
     }
-    button.primary:hover { transform: translateY(-2px); }
 
-    body.light-mode { background: #fff; color: #000; }
-    body.light-mode .sidebar { background: rgba(0,0,0,0.05); }
-    body.light-mode .stock-card { background: rgba(0,0,0,0.05); border-color: rgba(0,0,0,0.1); }
-    body.light-mode .stock-card.selected { border-color: green; background: rgba(0,128,0,0.1); }
+    .profile:hover { transform: scale(1.05); }
+
+    /* Theme icon toggle (sun/moon) */
+    .theme-toggle {
+      position: fixed;
+      top: 22px;
+      right: 25px;
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      background: none;
+      border: 1px solid rgba(255,255,255,0.2);
+      transition: all 0.3s ease;
+      z-index: 310;
+    }
+
+    .theme-toggle:hover {
+      background: rgba(255,255,255,0.1);
+    }
+
+    .theme-toggle svg {
+      width: 22px;
+      height: 22px;
+      fill: #fff;
+      transition: fill 0.4s ease;
+    }
+
+    body.light-mode .theme-toggle svg {
+      fill: #000;
+    }
+
+    /* Profile dropdown */
+    .profile-menu {
+      position: absolute;
+      top: 70px;
+      right: 30px;
+      background: rgba(255,255,255,0.1);
+      border: 1px solid rgba(255,255,255,0.2);
+      border-radius: 10px;
+      backdrop-filter: blur(12px);
+      overflow: hidden;
+      display: none;
+      flex-direction: column;
+      width: 180px;
+      animation: fadeIn 0.3s ease forwards;
+      z-index: 400;
+      transition: background 0.4s ease, border 0.4s ease;
+    }
+
+    .profile-menu.active { display: flex; }
+
+    .profile-menu button {
+      background: none;
+      border: none;
+      color: #fff;
+      padding: 0.9rem;
+      text-align: left;
+      width: 100%;
+      cursor: pointer;
+      transition: background 0.3s ease;
+    }
+
+    .profile-menu button:hover { background: rgba(255,255,255,0.15); }
+
+    /* Main content */
+    main {
+      margin-left: 280px;
+      padding: 4rem 3rem;
+      transition: margin-left 0.4s ease, background 0.4s ease, color 0.4s ease;
+    }
+
+    .sidebar.hidden ~ main { margin-left: 0; }
+
+    h1 {
+      font-size: 2.8rem;
+      font-weight: 600;
+      margin-bottom: 1rem;
+    }
+
+    .lead {
+      font-size: 1.2rem;
+      color: #aaa;
+      max-width: 700px;
+      margin-bottom: 3rem;
+    }
+
+    /* Grid Squares */
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 2rem;
+      margin-bottom: 4rem;
+    }
+
+    .cell {
+      text-align: center;
+      transition: transform 0.3s ease, opacity 0.3s ease;
+      opacity: 0.9;
+    }
+
+    .cell:hover {
+      transform: translateY(-5px);
+      opacity: 1;
+    }
+
+    .square {
+      width: 75px;
+      height: 75px;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      grid-template-rows: repeat(3, 1fr);
+      gap: 3px;
+      background: none;
+      margin: 0 auto 1rem;
+      animation: rotateSquare 10s linear infinite;
+      transform-origin: center;
+      cursor: pointer;
+      transition: transform 0.4s ease, box-shadow 0.4s ease, gap 0.4s ease;
+    }
+
+    .square div {
+      background: #fff;
+      border-radius: 2px;
+      transition: transform 0.3s ease, opacity 0.3s ease;
+    }
+
+    .square:hover {
+      transform: scale(1.25);
+      gap: 6px;
+      box-shadow: 0 0 25px rgba(255,255,255,0.6);
+    }
+
+    @keyframes rotateSquare {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(-10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* MOBILE */
+    @media (max-width: 768px) {
+      .sidebar { transform: translateX(-100%); width: 260px; }
+      .sidebar.active { transform: translateX(0); }
+      main { margin-left: 0; padding: 2rem; }
+      .toggle-btn { top: 15px; left: 15px; }
+    }
+
+    /* LIGHT MODE */
+    body.light-mode {
+      background-color: #fff;
+      color: #000;
+    }
+
+    body.light-mode .sidebar {
+      background: rgba(0,0,0,0.05);
+      border-right: 1px solid rgba(0,0,0,0.1);
+    }
+
+    body.light-mode .sidebar .button {
+      border: 1px solid #000;
+      color: #000;
+    }
+
+    body.light-mode .sidebar .button:hover {
+      background: #000;
+      color: #fff;
+      box-shadow: 0 0 10px rgba(0,0,0,0.3);
+    }
+
+    body.light-mode .profile {
+      background: #000;
+      color: #fff;
+    }
+
+    body.light-mode .profile-menu {
+      background: rgba(0,0,0,0.05);
+      border: 1px solid rgba(0,0,0,0.2);
+    }
+
+    body.light-mode .profile-menu button {
+      color: #000;
+    }
+
+    body.light-mode .profile-menu button:hover {
+      background: rgba(0,0,0,0.1);
+    }
+
+    body.light-mode .square div {
+      background: #000;
+    }
+
+    body.light-mode .toggle-btn { background: #000; }
+    body.light-mode .toggle-dot { background: #fff; }
   </style>
 
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
 </head>
 
 <body>
   <aside class="sidebar" id="sidebar">
     <img src="assets/bullride1055_v2.png" alt="Bullride Logo">
+
+    <!-- MAIN NAVIGATION -->
     <button class="button" id="dashboardBtn">Dashboard</button>
     <button class="button" id="creationsBtn">My Creations</button>
     <button class="button" id="investmentsBtn">My Investments</button>
     <button class="button" id="exploreBtn">Explore</button>
     <button class="button" id="adminBtn" style="display:none;">Admin Panel</button>
+
+    <p style="margin-top:1rem;font-size:0.9rem;opacity:0.8;">
+      Welcome to your dashboard. Manage your ETFs, explore markets, and discover trending baskets.
+    </p>
   </aside>
 
-  <div class="toggle-btn" id="toggleSidebar"><div class="toggle-dot"></div></div>
+  <div class="toggle-btn" id="toggleSidebar">
+    <div class="toggle-dot"></div>
+  </div>
+
   <div class="profile" id="profileIcon">U</div>
+  <div class="theme-toggle" id="themeToggle">
+    <!-- Moon (default dark) -->
+    <svg id="moonIcon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+      <path d="M21 12.79A9 9 0 0112.21 3 7 7 0 1021 12.79z"/>
+    </svg>
+
+    <!-- Sun (light mode) -->
+    <svg id="sunIcon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" style="display:none;">
+      <path d="M12 18a6 6 0 100-12 6 6 0 000 12zm0 4a1 1 0 010-2h0a1 1 0 010 2zm0-20a1 1 0 010-2h0a1 1 0 010 2zm8.49 17.49a1 1 0 010-1.41h0a1 1 0 011.41 1.41h0a1 1 0 01-1.41 0zM3.51 4.51a1 1 0 010-1.41h0a1 1 0 011.41 1.41h0a1 1 0 01-1.41 0z"/>
+    </svg>
+  </div>
+
   <div class="profile-menu" id="profileMenu">
-    <button id="settingsBtn">Settings</button>
+    <button>Settings</button>
     <button id="signOut">Sign Out</button>
   </div>
 
-  <main id="mainContent">
+  <main>
     <h1>Dashboard</h1>
     <p class="lead">Explore and manage your investments — your personalized ETF hub.</p>
+
+    <section class="grid">
+      <div class="cell">
+        <div class="square">
+          <div></div><div></div><div></div>
+          <div></div><div></div><div></div>
+          <div></div><div></div><div></div>
+        </div>
+        <h5>Your ETFs</h5>
+      </div>
+      <div class="cell">
+        <div class="square">
+          <div></div><div></div><div></div>
+          <div></div><div></div><div></div>
+          <div></div><div></div><div></div>
+        </div>
+        <h5>Discover</h5>
+      </div>
+      <div class="cell">
+        <div class="square">
+          <div></div><div></div><div></div>
+          <div></div><div></div><div></div>
+          <div></div><div></div><div></div>
+        </div>
+        <h5>Analytics</h5>
+      </div>
+      <div class="cell">
+        <div class="square">
+          <div></div><div></div><div></div>
+          <div></div><div></div><div></div>
+          <div></div><div></div><div></div>
+        </div>
+        <h5>Performance</h5>
+      </div>
+    </section>
   </main>
 
-  <script type="module">
+    <script type="module">
     import { UserManager } from "https://cdn.jsdelivr.net/npm/oidc-client-ts@2.2.3/+esm";
-    const API_BASE = "https://api.bullride.us";
+
     const userManager = new UserManager({
       authority: "https://cognito-idp.us-east-1.amazonaws.com/us-east-1_HPx82G5s7",
       client_id: "2l15ru0njbo72tv2skuceokjf2",
@@ -148,174 +408,630 @@
       scope: "openid email phone profile"
     });
 
-    // Login session check
+    const API_BASE = "https://api.bullride.us";
+
+    // ---------- Mini helpers for charts & math ----------
+    async function fetchBarsMulti(symbolsCsv, timeframe = "1Day", limit = 20) {
+      const url = `${API_BASE}/api/alpaca/bars?symbols=${encodeURIComponent(symbolsCsv)}&timeframe=${timeframe}&limit=${limit}`;
+      const r = await fetch(url);
+      return r.json(); // { bars: { AAPL:[...], MSFT:[...] } }
+    }
+
+    async function drawMiniChart(symbol, canvas, timeframe = "1Day") {
+      try {
+        const data = await fetchBarsMulti(symbol, timeframe, 20);
+        const arr = data?.bars?.[symbol] || [];
+        const labels = arr.map(b => (b.t || '').slice(5, 10));
+        const values = arr.map(b => b.c);
+        const ctx = canvas.getContext("2d");
+        // destroy previous chart instance if any
+        if (canvas._chart) { canvas._chart.destroy(); }
+        canvas._chart = new Chart(ctx, {
+          type: 'line',
+          data: { labels, datasets: [{ data: values, borderColor: '#00ff7f', fill: false, tension: 0.3 }] },
+          options: {
+            responsive: true,
+            plugins: { legend: { display: false } },
+            scales: { x: { display: false }, y: { display: false } },
+            elements: { point: { radius: 0 } }
+          }
+        });
+      } catch (e) {
+        console.error("Chart error for", symbol, e);
+      }
+    }
+
+    function pctChange(oldVal, newVal) {
+      if (!oldVal || oldVal === 0 || newVal == null) return 0;
+      return ((newVal - oldVal) / oldVal) * 100;
+    }
+
+
+    // Make available to other scripts
+    window.userManager = userManager;
+
     (async () => {
-      if (window.location.search.includes("code=")) {
-        await userManager.signinRedirectCallback();
-        window.history.replaceState({}, document.title, "/dashboard");
-      }
-      const user = await userManager.getUser();
-      if (!user || user.expired) {
+      try {
+        // Handle Cognito redirect first
+        if (window.location.search.includes("code=")) {
+          await userManager.signinRedirectCallback();
+          window.history.replaceState({}, document.title, "/dashboard");
+          window.location.reload(); // refresh once after successful sign-in
+        }
+
+        // Check session
+        const user = await userManager.getUser();
+        if (!user || user.expired) {
+          window.location.href = "https://bullride.us";
+          return;
+        }
+
+        // Logged in — continue loading rest of the page
+        initDashboard(user);
+      } catch (err) {
+        console.error("Login check failed:", err);
         window.location.href = "https://bullride.us";
-        return;
       }
-      init(user);
     })();
 
-    async function init(user) {
-      const main = document.getElementById("mainContent");
-      const profileIcon = document.getElementById("profileIcon");
-      const profileMenu = document.getElementById("profileMenu");
-      const sidebar = document.getElementById("sidebar");
-      const toggleSidebar = document.getElementById("toggleSidebar");
-
-      // initials
-      const name = user.profile.name || user.profile.email;
-      profileIcon.textContent = name[0].toUpperCase();
-
-      toggleSidebar.addEventListener("click",()=>sidebar.classList.toggle("hidden"));
-      profileIcon.addEventListener("click",()=>profileMenu.classList.toggle("active"));
-      document.addEventListener("click",(e)=>{if(!profileMenu.contains(e.target)&&!profileIcon.contains(e.target))profileMenu.classList.remove("active")});
-
-      document.getElementById("signOut").addEventListener("click",async()=>{
-        await userManager.removeUser();
-        window.location.href="https://auth.bullride.us/logout?client_id=2l15ru0njbo72tv2skuceokjf2&logout_uri=https://bullride.us";
-      });
-
-      document.getElementById("creationsBtn").onclick = ()=>loadMyCreations(user);
-      document.getElementById("exploreBtn").onclick = ()=>loadExplore();
+    // Everything else runs only after user verified
+    async function initDashboard(user) {
+      // existing dashboard code goes here ↓
+      // (sidebar toggles, profile menu, theme toggle, etc.)
     }
 
-    // ---------------- My Creations -----------------
-    async function loadMyCreations(user){
-      const main=document.getElementById("mainContent");
-      main.innerHTML=`<h1>My Creations</h1><p class="lead">Your custom ETF baskets.</p>
-      <div id="myBaskets"></div>
-      <button class="primary" id="createBasketBtn">+ Create New Basket</button>`;
-      const div=document.getElementById("myBaskets");
-      const email=user.profile.email;
-      const res=await fetch(\`\${API_BASE}/api/baskets/user?email=\${encodeURIComponent(email)}\`);
-      const baskets=await res.json();
-      if(baskets.length===0){div.innerHTML="<p>No baskets yet.</p>";return;}
-      baskets.forEach(b=>{
-        const card=document.createElement("div");
-        card.className="stock-card";
-        card.innerHTML=\`<h3>\${b.name} \${b.active===false?"(inactive)":""}</h3>
-        <p>\${b.stocks.length} stocks</p>
-        <button class="primary delete-btn">Delete</button>\`;
-        card.querySelector(".delete-btn").onclick=async()=>{
-          if(confirm("Delete this basket?")){
-            await fetch(\`\${API_BASE}/api/baskets/\${b.basketId}\`,{method:"DELETE"});
-            loadMyCreations(user);
-          }
-        };
-        div.appendChild(card);
-      });
-      document.getElementById("createBasketBtn").onclick=()=>openBasketBuilder(user);
+    const sidebar = document.getElementById("sidebar");
+    const toggleSidebar = document.getElementById("toggleSidebar");
+    const profileIcon = document.getElementById("profileIcon");
+    const profileMenu = document.getElementById("profileMenu");
+    const themeToggle = document.getElementById("themeToggle");
+    const moonIcon = document.getElementById("moonIcon");
+    const sunIcon = document.getElementById("sunIcon");
+    const logoImg = document.querySelector(".sidebar img");
+    const body = document.body;
+
+    // --- Sidebar toggle ---
+    toggleSidebar.addEventListener("click", () => {
+      if (window.innerWidth <= 768) sidebar.classList.toggle("active");
+      else sidebar.classList.toggle("hidden");
+    });
+
+    // --- Profile menu toggle ---
+    profileIcon.addEventListener("click", (e) => {
+      e.stopPropagation();
+      profileMenu.classList.toggle("active");
+    });
+
+    // --- Close profile menu when clicking outside ---
+    document.addEventListener("click", (e) => {
+      if (!profileMenu.contains(e.target) && !profileIcon.contains(e.target)) {
+        profileMenu.classList.remove("active");
+      }
+    });
+
+    // --- Load Cognito user and set initials ---
+    async function loadUser() {
+      try {
+        let user = await userManager.getUser();
+        if (!user) user = await userManager.signinRedirectCallback();
+        if (user && user.profile) {
+          const fullName = user.profile.name || user.profile.given_name || user.profile.email || "User";
+          const names = fullName.split(" ");
+          const initials = (names[0]?.[0] || "") + (names[1]?.[0] || "");
+          document.getElementById("profileIcon").textContent = initials.toUpperCase();
+        }
+      } catch (err) {
+        console.error("Error loading user:", err);
+      }
     }
 
-    // ---------------- Basket Builder -----------------
-    async function openBasketBuilder(user){
-      const main=document.getElementById("mainContent");
-      main.innerHTML=\`
+    loadUser();
+
+    // --- Show Admin Panel only for @bullride.us users ---
+    async function checkAdminAccess() {
+      try {
+        const user = await userManager.getUser();
+        if (user && user.profile && user.profile.email && user.profile.email.endsWith("@bullride.us")) {
+          document.getElementById("adminBtn").style.display = "block";
+        }
+      } catch (err) {
+        console.error("Error checking admin access:", err);
+      }
+    }
+
+    checkAdminAccess();
+
+    // --- THEME TOGGLE (Dark / Light Mode) ---
+    const savedTheme = localStorage.getItem("bullride-theme");
+    if (savedTheme === "light") {
+      body.classList.add("light-mode");
+      moonIcon.style.display = "none";
+      sunIcon.style.display = "block";
+      logoImg.src = "assets/bullride1055_v2_light.png";
+    } else {
+      logoImg.src = "assets/bullride1055_v2.png";
+    }
+
+    themeToggle.addEventListener("click", () => {
+      const light = body.classList.toggle("light-mode");
+      if (light) {
+        moonIcon.style.display = "none";
+        sunIcon.style.display = "block";
+        logoImg.src = "assets/bullride1055_v2_light.png";
+        localStorage.setItem("bullride-theme", "light");
+      } else {
+        sunIcon.style.display = "none";
+        moonIcon.style.display = "block";
+        logoImg.src = "assets/bullride1055_v2.png";
+        localStorage.setItem("bullride-theme", "dark");
+      }
+    });
+
+    // --- SETTINGS PAGE ---
+    document.querySelector("#profileMenu button:nth-child(1)").addEventListener("click", async () => {
+      const main = document.querySelector("main");
+      main.innerHTML = `
+        <h1>Settings</h1>
+        <p class="lead">View your account information and preferences.</p>
+
+        <section style="max-width:500px;">
+          <div style="background:rgba(255,255,255,0.05);padding:20px;border-radius:12px;border:1px solid rgba(255,255,255,0.1);">
+            <h3 style="margin-bottom:1rem;">Profile Information</h3>
+            <p><strong>Username:</strong> <span id="displayUsername">Loading...</span></p>
+            <p><strong>Name:</strong> <span id="displayName">Loading...</span></p>
+            <p><strong>Phone Number:</strong> <span id="displayPhone">Loading...</span></p>
+            <p><strong>Email:</strong> <span id="displayEmail">Loading...</span>
+              <span id="emailVerified" style="font-size:0.9rem;margin-left:8px;color:#aaa;">(checking...)</span></p>
+          </div>
+        </section>
+      `;
+
+      try {
+        const user = await userManager.getUser();
+
+        document.getElementById("displayUsername").textContent = user?.profile?.preferred_username || user?.profile?.username || "(Not available)";
+        document.getElementById("displayName").textContent = user?.profile?.name || "(Not provided)";
+        document.getElementById("displayPhone").textContent = user?.profile?.phone_number || "(Not provided)";
+        document.getElementById("displayEmail").textContent = user?.profile?.email || "(Not provided)";
+
+        if (user?.profile?.email_verified === true || user?.profile?.email_verified === "true") {
+          document.getElementById("emailVerified").textContent = "(verified)";
+          document.getElementById("emailVerified").style.color = "lightgreen";
+        } else {
+          document.getElementById("emailVerified").textContent = "(unverified)";
+          document.getElementById("emailVerified").style.color = "orange";
+        }
+      } catch (err) {
+        console.error("Error loading user info:", err);
+        document.querySelector("section").innerHTML = "<p style='color:red;'>Failed to load user data.</p>";
+      }
+    });
+
+    // --- DASHBOARD BUTTON (reload main view) ---
+    document.getElementById("dashboardBtn").addEventListener("click", () => {
+      const main = document.querySelector("main");
+      main.innerHTML = `
+        <h1>Dashboard</h1>
+        <p class="lead">Explore and manage your investments — your personalized ETF hub.</p>
+        <section class="grid">
+          <div class="cell">
+            <div class="square">${"<div></div>".repeat(9)}</div>
+            <h5>Your ETFs</h5>
+          </div>
+          <div class="cell">
+            <div class="square">${"<div></div>".repeat(9)}</div>
+            <h5>Discover</h5>
+          </div>
+          <div class="cell">
+            <div class="square">${"<div></div>".repeat(9)}</div>
+            <h5>Analytics</h5>
+          </div>
+          <div class="cell">
+            <div class="square">${"<div></div>".repeat(9)}</div>
+            <h5>Performance</h5>
+          </div>
+        </section>
+      `;
+    });
+
+    // --- SIGN OUT ---
+    document.getElementById("signOut").addEventListener("click", async () => {
+      try {
+        const user = await userManager.getUser();
+        const clientId = "2l15ru0njbo72tv2skuceokjf2";
+        const logoutUri = "https://bullride.us";
+        const logoutUrl = `https://auth.bullride.us/logout?client_id=${clientId}&logout_uri=${encodeURIComponent(logoutUri)}`;
+        if (user) await userManager.removeUser();
+        window.location.href = logoutUrl;
+      } catch {
+        window.location.href = "https://bullride.us";
+      }
+    });
+
+    // --- MY CREATIONS PAGE ---
+    document.getElementById("creationsBtn").addEventListener("click", async () => {
+      const main = document.querySelector("main");
+      main.innerHTML = `
+        <h1>My Creations</h1>
+        <p class="lead">Your custom ETF baskets.</p>
+
+        <section id="basketsGrid"
+          style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:2rem;">
+          <p>Loading baskets...</p>
+        </section>
+      `;
+
+      const grid = document.getElementById("basketsGrid");
+
+      try {
+        const user = await userManager.getUser();
+        const email = user?.profile?.email;
+        const res = await fetch(`${API_BASE}/api/baskets/user?email=${encodeURIComponent(email)}`);
+        const baskets = await res.json();
+
+        grid.innerHTML = "";
+
+        // Show user's baskets if any
+        if (Array.isArray(baskets) && baskets.length > 0) {
+          baskets.forEach(b => {
+            const card = document.createElement("div");
+            card.style.cssText = `
+              background:rgba(255,255,255,0.05);
+              padding:1.5rem;
+              border-radius:12px;
+              border:1px solid rgba(255,255,255,0.1);
+              text-align:center;
+              transition:all 0.3s ease;
+            `;
+            card.innerHTML = `
+              <h3>${b.name} ${b.active === false ? "(inactive)" : ""}</h3>
+              <p>${b.stocks.length} stock${b.stocks.length !== 1 ? "s" : ""}</p>
+              <button class="delete-basket"
+                style="margin-top:1rem;padding:0.6rem 1rem;border:none;
+                border-radius:6px;background:#fff;color:#000;cursor:pointer;">
+                Delete Basket
+              </button>
+            `;
+
+            // Delete basket → soft delete (sets active=false)
+            const delBtn = card.querySelector(".delete-basket");
+            delBtn.addEventListener("click", async () => {
+              if (!confirm("Delete this basket? It will become inactive.")) return;
+              try {
+                await fetch(`${API_BASE}/api/baskets/${b.basketId}`, { method: "DELETE" });
+                alert("Basket marked inactive.");
+                document.getElementById("creationsBtn").click(); // reload list
+              } catch (err) {
+                console.error("Delete basket error:", err);
+                alert("Failed to delete basket.");
+              }
+            });
+
+            grid.appendChild(card);
+          });
+        } else {
+          grid.innerHTML = "<p style='opacity:0.8;'>You haven't created any baskets yet.</p>";
+        }
+
+        // --- Create New Basket button ---
+        const create = document.createElement("div");
+        create.style.cssText = `
+          display:flex;align-items:center;justify-content:center;
+          border:2px dashed rgba(255,255,255,0.3);
+          border-radius:12px;
+          cursor:pointer;transition:all 0.3s ease;height:150px;
+        `;
+        create.innerHTML = `<span style="font-size:1.2rem;opacity:0.8;">+ Create New Basket</span>`;
+        create.addEventListener("mouseenter", () => { create.style.background = "rgba(255,255,255,0.05)"; });
+        create.addEventListener("mouseleave", () => { create.style.background = "none"; });
+
+        // Open visual basket builder
+        create.addEventListener("click", async () => {
+          const userNow = await userManager.getUser();
+          openBasketBuilder(userNow); // uses your new builder function
+        });
+
+        grid.appendChild(create);
+      } catch (err) {
+        console.error("Error loading baskets:", err);
+        grid.innerHTML = "<p style='color:red;'>Failed to load baskets.</p>";
+      }
+    });
+
+
+
+    // --- MY INVESTMENTS PAGE ---
+    document.getElementById("investmentsBtn").addEventListener("click", async () => {
+      const main = document.querySelector("main");
+      main.innerHTML = `
+        <h1>My Investments</h1>
+        <p class="lead">Baskets you've purchased or invested in — your active portfolio overview.</p>
+
+        <section style="display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:2rem;">
+          <div style="background:rgba(255,255,255,0.05);padding:1.5rem;border-radius:12px;border:1px solid rgba(255,255,255,0.1);">
+            <h3>AI Innovators Fund</h3>
+            <p>Created by @sophia</p>
+            <p style="margin-top:0.5rem;">Return: <strong style="color:lightgreen;">+8.7%</strong></p>
+            <button style="margin-top:1rem;padding:0.6rem 1rem;border:none;border-radius:6px;background:#fff;color:#000;cursor:pointer;">View Details</button>
+          </div>
+
+          <div style="background:rgba(255,255,255,0.05);padding:1.5rem;border-radius:12px;border:1px solid rgba(255,255,255,0.1);">
+            <h3>Green Energy Growth</h3>
+            <p>Created by You</p>
+            <p style="margin-top:0.5rem;">Return: <strong style="color:lightgreen;">+2.1%</strong></p>
+            <button style="margin-top:1rem;padding:0.6rem 1rem;border:none;border-radius:6px;background:#fff;color:#000;cursor:pointer;">View Details</button>
+          </div>
+
+          <div style="background:rgba(255,255,255,0.05);padding:1.5rem;border-radius:12px;border:1px solid rgba(255,255,255,0.1);">
+            <h3>Tech Titans Basket</h3>
+            <p>Created by You</p>
+            <p style="margin-top:0.5rem;">Return: <strong style="color:red;">-1.4%</strong></p>
+            <button style="margin-top:1rem;padding:0.6rem 1rem;border:none;border-radius:6px;background:#fff;color:#000;cursor:pointer;">View Details</button>
+          </div>
+        </section>
+      `;
+    });
+
+    // Basket open
+    async function openBasketBuilder(user) {
+      const main = document.querySelector("main");
+      main.innerHTML = `
         <h1>Create Basket</h1>
-        <p class="lead">Select stocks to include in your basket. You can search or choose popular ones.</p>
-        <input id="basketName" placeholder="Basket Name" style="padding:0.6rem;width:250px;margin-bottom:1rem;border-radius:6px;border:none;">
-        <input id="stockSearch" placeholder="Search stock..." style="padding:0.6rem;width:250px;margin-left:1rem;border-radius:6px;border:none;">
-        <button class="primary" id="searchBtn">Search</button>
-        <div id="stocksContainer" class="stock-grid" style="margin-top:2rem;">Loading popular stocks...</div>
-        <div id="basketPreview" style="margin-top:2rem;"></div>
-        <button class="primary" id="finalizeBtn" style="display:none;">Finalize Basket</button>
-      \`;
-      const container=document.getElementById("stocksContainer");
-      let selected={};
-      const userEmail=user.profile.email;
+        <p class="lead">Search & select stocks, adjust timeframes, set shares, and finalize.</p>
 
-      async function loadPopular(){
-        const res=await fetch(\`\${API_BASE}/api/alpaca/popular\`);
-        const data=await res.json();
-        renderStocks(data);
+        <div style="display:flex;flex-wrap:wrap;gap:12px;align-items:center;margin:10px 0 20px;">
+          <input id="basketName" placeholder="Basket Name" style="padding:0.6rem;width:260px;border-radius:6px;border:none;">
+          <input id="stockSearch" placeholder="Search by ticker or name (e.g., AAPL, Microsoft)" style="padding:0.6rem;width:320px;border-radius:6px;border:none;">
+          <button id="searchBtn" class="button" style="width:auto;">Search</button>
+          <label style="opacity:0.8;margin-left:8px;">Timeframe:</label>
+          <select id="tfSelect" style="padding:0.5rem;border-radius:6px;border:none;">
+            <option value="1Day" selected>1 Day</option>
+            <option value="5Min">5 Min</option>
+            <option value="1Hour">1 Hour</option>
+          </select>
+          <button id="showPopularBtn" class="button" style="width:auto;">Show Popular</button>
+        </div>
+
+        <section id="stocksGrid" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:1.2rem;">
+          <p>Loading popular stocks...</p>
+        </section>
+
+        <section id="previewSection" style="margin-top:2rem;">
+          <h3>Basket Preview</h3>
+          <div id="previewList" style="margin-top:0.8rem;opacity:0.9;">No stocks selected yet.</div>
+          <button id="finalizeBtn" class="button" style="width:auto;margin-top:1rem;display:none;">Finalize Basket</button>
+        </section>
+      `;
+
+      const stocksGrid = document.getElementById("stocksGrid");
+      const tfSelect = document.getElementById("tfSelect");
+      const searchBtn = document.getElementById("searchBtn");
+      const showPopularBtn = document.getElementById("showPopularBtn");
+      const previewList = document.getElementById("previewList");
+      const finalizeBtn = document.getElementById("finalizeBtn");
+      const userEmail = user?.profile?.email;
+
+      // selected: { AAPL: { symbol:'AAPL', shares:1, price:<latestBid> } }
+      let selected = {};
+      let currentTimeframe = tfSelect.value;
+
+      async function loadPopular() {
+        stocksGrid.innerHTML = `<p>Loading popular stocks...</p>`;
+        const res = await fetch(`${API_BASE}/api/alpaca/popular`);
+        const list = await res.json(); // [{symbol, quote}]
+        renderStocks(list);
       }
 
-      async function searchStock(){
-        const q=document.getElementById("stockSearch").value.trim();
-        if(!q)return loadPopular();
-        const res=await fetch(\`\${API_BASE}/api/alpaca/search?q=\${encodeURIComponent(q)}\`);
-        const data=await res.json();
-        renderStocks(data);
+      async function search() {
+        const q = document.getElementById("stockSearch").value.trim();
+        if (!q) return loadPopular();
+        stocksGrid.innerHTML = `<p>Searching...</p>`;
+        const res = await fetch(`${API_BASE}/api/alpaca/search?q=${encodeURIComponent(q)}`);
+        const list = await res.json(); // [{symbol, quote}]
+        renderStocks(list);
       }
 
-      function renderStocks(list){
-        container.innerHTML="";
-        list.forEach(async s=>{
-          const card=document.createElement("div");
-          card.className="stock-card";
-          card.innerHTML=\`<h4>\${s.symbol}</h4><p>Bid: \$\${s.quote?.bp||"—"}</p><canvas id="chart-\${s.symbol}"></canvas>\`;
-          card.onclick=()=>{
-            if(selected[s.symbol]){delete selected[s.symbol];card.classList.remove("selected");}
-            else{selected[s.symbol]={symbol:s.symbol,shares:1,price:s.quote?.bp||0};card.classList.add("selected");}
+      function renderStocks(list) {
+        stocksGrid.innerHTML = "";
+        if (!Array.isArray(list) || list.length === 0) {
+          stocksGrid.innerHTML = `<p style="opacity:0.8;">No results.</p>`;
+          return;
+        }
+        list.forEach(item => {
+          const sym = item.symbol;
+          const bid = item?.quote?.bp ?? null;
+          const ask = item?.quote?.ap ?? null;
+          const mid = (bid && ask) ? ((bid + ask) / 2) : (bid ?? ask ?? null);
+
+          const card = document.createElement("div");
+          card.style.cssText = `
+            background:rgba(255,255,255,0.05);
+            border:1px solid rgba(255,255,255,0.1);
+            border-radius:10px;
+            padding:1rem;cursor:pointer;transition:all .2s ease;
+          `;
+          card.classList.toggle("selected", !!selected[sym]);
+          card.innerHTML = `
+            <div style="display:flex;align-items:baseline;justify-content:space-between;gap:8px;">
+              <h3 style="margin:0;">${sym}</h3>
+              <span style="opacity:.8;">${mid ? `$${mid.toFixed(2)}` : '—'}</span>
+            </div>
+            <canvas id="mini-${sym}" height="120"></canvas>
+            <div style="display:${selected[sym] ? 'block' : 'none'};margin-top:8px;">
+              <label style="opacity:.8;font-size:.9rem;">Shares:</label>
+              <input type="number" min="1" value="${selected[sym]?.shares ?? 1}" id="shares-${sym}"
+                     style="width:80px;padding:.4rem;border-radius:6px;border:none;margin-left:8px;">
+            </div>
+          `;
+          card.addEventListener("click", (e) => {
+            // Don't toggle when changing shares (stop bubbling)
+            if (e.target && String(e.target.id).startsWith("shares-")) return;
+
+            if (selected[sym]) {
+              delete selected[sym];
+              card.classList.remove("selected");
+              // hide shares row
+              const sharesRow = card.querySelector(`#shares-${sym}`)?.parentElement;
+              if (sharesRow) sharesRow.style.display = "none";
+            } else {
+              selected[sym] = { symbol: sym, shares: 1, price: mid || 0 };
+              card.classList.add("selected");
+              const sharesRow = card.querySelector(`#shares-${sym}`)?.parentElement;
+              if (sharesRow) sharesRow.style.display = "block";
+            }
             updatePreview();
-          };
-          container.appendChild(card);
+          });
 
-          // draw mini chart
-          const bars=await fetch(\`\${API_BASE}/api/alpaca/bars?symbols=\${s.symbol}&limit=20\`).then(r=>r.json());
-          const ctx=card.querySelector("canvas").getContext("2d");
-          const dataBars=bars.bars?.[s.symbol]||[];
-          new Chart(ctx,{type:'line',data:{
-            labels:dataBars.map(b=>b.t.slice(5,10)),
-            datasets:[{data:dataBars.map(b=>b.c),borderColor:'#0f0',fill:false,tension:0.3}]
-          },options:{plugins:{legend:{display:false}},scales:{x:{display:false},y:{display:false}}}});
+          stocksGrid.appendChild(card);
+
+          // Draw chart
+          const canvas = card.querySelector(`#mini-${sym}`);
+          drawMiniChart(sym, canvas, currentTimeframe);
+
+          // Live-change shares
+          card.addEventListener("change", (e) => {
+            if (e.target && e.target.id === `shares-${sym}`) {
+              const v = parseInt(e.target.value || "1", 10);
+              if (selected[sym]) selected[sym].shares = Math.max(1, v);
+              updatePreview();
+            }
+          });
         });
       }
 
-      function updatePreview(){
-        const preview=document.getElementById("basketPreview");
-        const keys=Object.keys(selected);
-        if(keys.length===0){preview.innerHTML="";document.getElementById("finalizeBtn").style.display="none";return;}
-        let html="<h3>Basket Preview</h3><ul>";
-        keys.forEach(sym=>{
-          html+=\`<li>\${sym}: <input type='number' min='1' value='\${selected[sym].shares}' style='width:60px' id='shares-\${sym}'> shares</li>\`;
-        });
-        html+="</ul>";
-        preview.innerHTML=html;
-        document.getElementById("finalizeBtn").style.display="inline-block";
-        keys.forEach(sym=>{
-          document.getElementById(\`shares-\${sym}\`).onchange=(e)=>selected[sym].shares=parseInt(e.target.value);
-        });
+      function updatePreview() {
+        const entries = Object.values(selected);
+        if (entries.length === 0) {
+          previewList.innerHTML = "No stocks selected yet.";
+          finalizeBtn.style.display = "none";
+          return;
+        }
+        previewList.innerHTML = `
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:.6rem;">
+            <strong>Symbol</strong><strong>Shares</strong><strong>Est. Price</strong>
+            ${entries.map(s => `
+              <div>${s.symbol}</div>
+              <div>${s.shares}</div>
+              <div>${s.price ? `$${Number(s.price).toFixed(2)}` : '—'}</div>
+            `).join("")}
+          </div>
+        `;
+        finalizeBtn.style.display = "inline-block";
       }
 
-      document.getElementById("searchBtn").onclick=searchStock;
-      loadPopular();
-
-      document.getElementById("finalizeBtn").onclick=async()=>{
-        const name=document.getElementById("basketName").value.trim()||"Untitled Basket";
-        const stocks=Object.values(selected);
-        if(stocks.length===0){alert("Select at least one stock.");return;}
-        const payload={userEmail,name,stocks};
-        await fetch(\`\${API_BASE}/api/baskets/create\`,{
-          method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(payload)
+      // actions
+      tfSelect.addEventListener("change", () => {
+        currentTimeframe = tfSelect.value;
+        // redraw all visible cards
+        document.querySelectorAll("canvas[id^='mini-']").forEach(cv => {
+          const sym = cv.id.replace("mini-",""); 
+          drawMiniChart(sym, cv, currentTimeframe);
         });
-        alert("Basket created!");
-        loadMyCreations(user);
-      };
-    }
-
-    // ---------------- Explore -----------------
-    async function loadExplore(){
-      const main=document.getElementById("mainContent");
-      main.innerHTML=\`<h1>Explore</h1><p class="lead">Trending baskets across all users.</p><div id="exploreGrid" class="stock-grid"></div>\`;
-      const grid=document.getElementById("exploreGrid");
-      const res=await fetch(\`\${API_BASE}/api/baskets/explore\`);
-      const data=await res.json();
-      grid.innerHTML="";
-      data.filter(b=>b.active!==false).forEach(b=>{
-        const card=document.createElement("div");
-        card.className="stock-card";
-        card.innerHTML=\`<h3>\${b.name}</h3><p>\${b.stocks.length} stocks</p><p>By \${b.userEmail}</p>\`;
-        grid.appendChild(card);
       });
+      searchBtn.addEventListener("click", search);
+      showPopularBtn.addEventListener("click", loadPopular);
+
+      finalizeBtn.addEventListener("click", async () => {
+        const name = (document.getElementById("basketName").value || "").trim() || "Untitled Basket";
+        const stocks = Object.values(selected);
+        if (stocks.length === 0) return alert("Select at least one stock.");
+        try {
+          const res = await fetch(`${API_BASE}/api/baskets/create`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ userEmail, name, stocks })
+          });
+          if (!res.ok) throw new Error("Create failed");
+          alert("Basket created!");
+          document.getElementById("creationsBtn").click(); // go back to list
+        } catch (e) {
+          console.error(e);
+          alert("Failed to create basket.");
+        }
+      });
+
+      // init
+      loadPopular();
     }
+
+    // --- EXPLORE PAGE (public baskets, sorted by biggest gainers) ---
+    document.getElementById("exploreBtn").addEventListener("click", async () => {
+      const main = document.querySelector("main");
+      main.innerHTML = `
+        <h1>Explore</h1>
+        <p class="lead">Public baskets across all users, sorted by biggest gainers.</p>
+        <section id="exploreGrid" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:1.2rem;">
+          <p>Loading baskets...</p>
+        </section>
+      `;
+      const grid = document.getElementById("exploreGrid");
+
+      try {
+        const res = await fetch(`${API_BASE}/api/baskets/explore`);
+        let baskets = await res.json();
+
+        // Show both active + inactive (public). You said everyone should see them.
+        // To sort by biggest gainers, we estimate each basket's 1-day % change using latest bars.
+        // 1) collect all unique symbols (cap to avoid huge query)
+        const allSyms = Array.from(new Set(
+          baskets.flatMap(b => (b.stocks || []).map(s => s.symbol))
+        )).slice(0, 120);
+        // 2) fetch bars in batch and compute last close change per symbol
+        const barData = await fetchBarsMulti(allSyms.join(','), "1Day", 2); // 2 last days
+        const lastChangeBySymbol = {};
+        for (const s of allSyms) {
+          const arr = barData?.bars?.[s] || [];
+          const len = arr.length;
+          if (len >= 2) {
+            const yClose = arr[len-2].c;
+            const tClose = arr[len-1].c;
+            lastChangeBySymbol[s] = pctChange(yClose, tClose); // % change
+          } else {
+            lastChangeBySymbol[s] = 0;
+          }
+        }
+        // 3) compute basket change as weighted (by shares) average of symbol changes
+        baskets.forEach(b => {
+          const comps = (b.stocks || []);
+          const totalShares = comps.reduce((a,c) => a + (Number(c.shares)||0), 0) || 1;
+          const score = comps.reduce((acc, c) => acc + (lastChangeBySymbol[c.symbol] || 0) * (Number(c.shares)||0), 0) / totalShares;
+          b._gainPct = score;
+        });
+
+        // 4) sort desc by gain
+        baskets.sort((a,b) => (b._gainPct||0) - (a._gainPct||0));
+
+        // 5) render
+        grid.innerHTML = "";
+        baskets.forEach(b => {
+          const card = document.createElement("div");
+          card.style.cssText = `
+            background:rgba(255,255,255,0.05);
+            border:1px solid rgba(255,255,255,0.1);
+            border-radius:10px;padding:1rem;
+          `;
+          const tag = (b.active === false) ? " (inactive)" : "";
+          const gainColor = (b._gainPct||0) >= 0 ? "lightgreen" : "salmon";
+          card.innerHTML = `
+            <h3 style="margin:0 0 .4rem 0;">${b.name}${tag}</h3>
+            <p style="opacity:.85;margin:0 0 .6rem 0;">By ${b.userEmail}</p>
+            <p style="margin:0 0 .6rem 0;">${b.stocks.length} stock${b.stocks.length !== 1 ? "s" : ""}</p>
+            <p style="margin:0;">Est. 1D Change: <strong style="color:${gainColor}">${(b._gainPct||0).toFixed(2)}%</strong></p>
+          `;
+          grid.appendChild(card);
+        });
+      } catch (e) {
+        console.error(e);
+        grid.innerHTML = "<p style='color:red;'>Failed to load explore baskets.</p>";
+      }
+    });
+
+    // --- ADMIN PANEL BUTTON (redirect to admin page) ---
+    document.getElementById("adminBtn").addEventListener("click", () => {
+      window.location.href = "https://bullride.us/bradminlc_1.html";
+    });
+
+
   </script>
 </body>
 </html>
