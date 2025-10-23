@@ -947,7 +947,6 @@
       });
     });
 
-
     // Basket open
     async function openBasketBuilder(user) {
       const main = document.querySelector("main");
@@ -956,16 +955,16 @@
         <p class="lead">Search & select stocks, adjust timeframes, set shares, and finalize.</p>
 
         <div style="display:flex;flex-wrap:wrap;gap:12px;align-items:center;margin:10px 0 20px;">
-          <input id="basketName" placeholder="Basket Name" style="padding:0.6rem;width:260px;border-radius:6px;border:none;">
-          <input id="stockSearch" placeholder="Search by ticker or name (e.g., AAPL, Microsoft)" style="padding:0.6rem;width:320px;border-radius:6px;border:none;">
-          <button id="searchBtn" class="button" style="width:auto;">Search</button>
+          <input id="basketName" class="input-dark" placeholder="Basket Name">
+          <input id="stockSearch" class="input-dark" placeholder="Search by ticker or name (e.g., AAPL, Microsoft)" style="width:320px;">
+          <button id="searchBtn" class="button-modern">Search</button>
           <label style="opacity:0.8;margin-left:8px;">Timeframe:</label>
-          <select id="tfSelect" style="padding:0.5rem;border-radius:6px;border:none;">
+          <select id="tfSelect" class="input-dark" style="width:120px;">
             <option value="1Day" selected>1 Day</option>
             <option value="5Min">5 Min</option>
             <option value="1Hour">1 Hour</option>
           </select>
-          <button id="showPopularBtn" class="button" style="width:auto;">Show Popular</button>
+          <button id="showPopularBtn" class="button-modern">Show Popular</button>
         </div>
 
         <section id="stocksGrid" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:1.2rem;">
@@ -975,9 +974,10 @@
         <section id="previewSection" style="margin-top:2rem;">
           <h3>Basket Preview</h3>
           <div id="previewList" style="margin-top:0.8rem;opacity:0.9;">No stocks selected yet.</div>
-          <button id="finalizeBtn" class="button" style="width:auto;margin-top:1rem;display:none;">Finalize Basket</button>
+          <button id="finalizeBtn" class="button-modern" style="margin-top:1.2rem;display:none;">Finalize Basket</button>
         </section>
       `;
+
 
       const stocksGrid = document.getElementById("stocksGrid");
       const tfSelect = document.getElementById("tfSelect");
@@ -1005,7 +1005,6 @@
       tfSelect.dispatchEvent(new Event("change"));
     }
 
-
     async function search() {
       const q = document.getElementById("stockSearch").value.trim();
       if (!q || q.length < 1) {
@@ -1021,7 +1020,6 @@
       for (const key in activeCharts) delete activeCharts[key];
 
       stocksGrid.innerHTML = `<p>Searching...</p>`;
-
 
       try {
         const res = await fetch(url);
@@ -1125,7 +1123,6 @@
 
         tfSelect.dispatchEvent(new Event("change"));
       }
-
 
       function updatePreview() {
         const entries = Object.values(selected);
@@ -1322,7 +1319,6 @@
         grid.innerHTML = "<p style='color:red;'>Failed to load explore baskets.</p>";
       }
     });
-
 
     // --- ADMIN PANEL BUTTON (redirect to admin page) ---
     document.getElementById("adminBtn").addEventListener("click", () => {
