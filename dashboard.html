@@ -450,12 +450,45 @@
           type: 'line',
           data: {
             labels,
-            datasets: [{
-              data: values,
-              borderColor: '#00ff7f',
-              fill: false,
-              tension: 0.3
-            }]
+            // --- Determine line color ---
+            const first = arr[0]?.c ?? 0;
+            const last = arr[arr.length - 1]?.c ?? 0;
+
+            function isAfterHours() {
+              const now = new Date();
+              const est = new Date(now.toLocaleString('en-US', { timeZone: 'America/New_York' }));
+              const hours = est.getHours() + est.getMinutes() / 60;
+              return hours < 9.5 || hours >= 16; // before 9:30am or after 4pm ET
+            }
+
+            let borderColor;
+            if (isAfterHours()) {
+              borderColor = '#FFD700'; // yellow
+            } else if (last < first) {
+              borderColor = '#FF5555'; // red
+            } else {
+              borderColor = '#00FF7F'; // green
+            }
+
+            activeCharts[symbol] = new Chart(ctx, {
+              type: 'line',
+              data: {
+                labels,
+                datasets: [{
+                  data: values,
+                  borderColor,
+                  fill: false,
+                  tension: 0.3
+                }]
+              },
+              options: {
+                responsive: true,
+                plugins: { legend: { display: false } },
+                scales: { x: { display: false }, y: { display: false } },
+                elements: { point: { radius: 0 } }
+              }
+            });
+
           },
           options: {
             responsive: true,
