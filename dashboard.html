@@ -435,6 +435,7 @@
 
     async function drawMiniChart(symbol, canvas, timeframe = "1Day") {
       try {
+        if (drawLock) return;
         // Fetch last N bars
         const data = await fetchBarsMulti(symbol, timeframe, 20);
         const arr = data?.bars?.[symbol] || [];
