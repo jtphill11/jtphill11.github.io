@@ -422,44 +422,123 @@
       return await r.json();
     }
 
+    function clearAllMiniCharts() {
+      for (const key in activeCharts) {
+        if (key.endsWith("_interval")) {
+          clearInterval(activeCharts[key]);
+        } else if (activeCharts[key].destroy) {
+          activeCharts[key].destroy();
+        }
+        delete activeCharts[key];
+      }
+    }
+
     async function drawMiniChart(symbol, canvas, timeframe = "1Day") {
       try {
+        // Fetch last N bars
         const data = await fetchBarsMulti(symbol, timeframe, 20);
         const arr = data?.bars?.[symbol] || [];
         if (arr.length === 0) return;
 
-        const labels = arr.map(b => (b.t || '').slice(5, 10));
-        const values = arr.map(b => b.c);
+        // --- Fix timestamp alignment for 1Day ---
+        const labels = arr.map(b => {
+          const d = new Date(b.t);
+          if (timeframe === "1Day") d.setDate(d.getDate() + 1);
+          return d.toLocaleDateString("en-US", {
+            month: "short",
+            day: "numeric",
+            timeZone: "America/Chicago"
+          });
+        });
 
+        const values = arr.map(b => b.c);
         const ctx = canvas.getContext("2d");
 
-        // If chart already exists, just update data
-        if (activeCharts[symbol]) {
-          activeCharts[symbol].data.labels = labels;
-          activeCharts[symbol].data.datasets[0].data = values;
-          activeCharts[symbol].update();
-          return;
+        // --- Determine market color logic ---
+        let borderColor = "#00FF7F"; // default green
+
+        // Check if after market hours (4 PM ET–8:30 AM ET)
+        const now = new Date();
+        const nowET = new Date(
+          now.toLocaleString("en-US", { timeZone: "America/New_York" })
+        );
+        const hoursET = nowET.getHours() + nowET.getMinutes() / 60;
+        const isAfterHours = hoursET >= 16 || hoursET < 8.5;
+
+        if (isAfterHours) {
+          borderColor = "#FFD700"; // yellow for after hours
+        } else if (values.length >= 2) {
+          const first = values[0];
+          const last = values[values.length - 1];
+          borderColor = last < first ? "#FF5555" : "#00FF7F"; // red or green
         }
 
-        // Otherwise, create it
-        activeCharts[symbol] = new Chart(ctx, {
-          type: 'line',
-          data: {
-            labels,
-            datasets: [{
-              data: values,
-              borderColor: '#00ff7f',
-              fill: false,
-              tension: 0.3
-            }]
-          },
-          options: {
-            responsive: true,
-            plugins: { legend: { display: false } },
-            scales: { x: { display: false }, y: { display: false } },
-            elements: { point: { radius: 0 } }
-          }
-        });
+        // --- If chart exists, update data & color ---
+        if (activeCharts[symbol]) {
+          const chart = activeCharts[symbol];
+          chart.data.labels = labels;
+          chart.data.datasets[0].data = values;
+          chart.data.datasets[0].borderColor = borderColor;
+          chart.update();
+        } else {
+          // --- Otherwise, create new chart ---
+          activeCharts[symbol] = new Chart(ctx, {
+            type: "line",
+            data: {
+              labels,
+              datasets: [{
+                data: values,
+                borderColor,
+                fill: false,
+                tension: 0.3
+              }]
+            },
+            options: {
+              responsive: true,
+              plugins: { legend: { display: false } },
+              scales: { x: { display: false }, y: { display: false } },
+              elements: { point: { radius: 0 } }
+            }
+          });
+        }
+
+        // --- LIVE UPDATE SECTION ---
+        if (!activeCharts[symbol + "_interval"]) {
+          activeCharts[symbol + "_interval"] = setInterval(async () => {
+            try {
+              const res = await fetch(`${API_BASE}/api/stocks/search?q=${symbol}`);
+              const qData = await res.json();
+              const quote = qData[0]?.quote || {};
+              const mid = quote.bp && quote.ap ? (quote.bp + quote.ap) / 2 : (quote.ap ?? quote.bp ?? null);
+
+              if (mid && activeCharts[symbol]) {
+                const chart = activeCharts[symbol];
+                const lastIndex = chart.data.datasets[0].data.length - 1;
+                chart.data.datasets[0].data[lastIndex] = mid;
+
+                // Update color logic again after refresh
+                const vals = chart.data.datasets[0].data;
+                const firstVal = vals[0];
+                const lastVal = vals[vals.length - 1];
+
+                const now = new Date();
+                const nowET = new Date(now.toLocaleString("en-US", { timeZone: "America/New_York" }));
+                const hoursET = nowET.getHours() + nowET.getMinutes() / 60;
+                const isAfterHours = hoursET >= 16 || hoursET < 8.5;
+
+                chart.data.datasets[0].borderColor = isAfterHours
+                  ? "#FFD700"
+                  : lastVal < firstVal
+                  ? "#FF5555"
+                  : "#00FF7F";
+
+                chart.update("none"); // smooth refresh
+              }
+            } catch (err) {
+              console.error(`Live update failed for ${symbol}:`, err);
+            }
+          }, 10_000);
+        }
       } catch (err) {
         console.error(`Chart error for ${symbol}:`, err);
       }
