@@ -414,18 +414,23 @@
     async function fetchBarsMulti(symbolsCsv, timeframe = "1Day", limit = 20) {
       const url = `${API_BASE}/api/stocks/bars?symbols=${encodeURIComponent(symbolsCsv)}&timeframe=${timeframe}&limit=${limit}`;
       const r = await fetch(url);
-      return r.json(); // { bars: { AAPL:[...], MSFT:[...] } }
+      return await r.json();
     }
 
     async function drawMiniChart(symbol, canvas, timeframe = "1Day") {
       try {
         const data = await fetchBarsMulti(symbol, timeframe, 20);
+        console.log('Chart data for', symbol, data);
+
         const arr = data?.bars?.[symbol] || [];
+        if (arr.length === 0) return; // Nothing to draw
+
         const labels = arr.map(b => (b.t || '').slice(5, 10));
         const values = arr.map(b => b.c);
+
         const ctx = canvas.getContext("2d");
-        // destroy previous chart instance if any
-        if (canvas._chart) { canvas._chart.destroy(); }
+        if (canvas._chart) canvas._chart.destroy();
+
         canvas._chart = new Chart(ctx, {
           type: 'line',
           data: { labels, datasets: [{ data: values, borderColor: '#00ff7f', fill: false, tension: 0.3 }] },
@@ -436,8 +441,8 @@
             elements: { point: { radius: 0 } }
           }
         });
-      } catch (e) {
-        console.error("Chart error for", symbol, e);
+      } catch (err) {
+        console.error('Chart error for', symbol, err);
       }
     }
 
