@@ -1027,25 +1027,40 @@
           drawMiniChart(sym, cv, currentTimeframe);
         });
       });
-      searchBtn.addEventListener("click", search);
-      let popularCooldown = false;
 
-      showPopularBtn.addEventListener("click", async () => {
-        if (popularCooldown) return; // ignore spam clicks
-        popularCooldown = true;
+      let buttonCooldown = false;
+
+      async function triggerWithCooldown(actionFn, label) {
+        if (buttonCooldown) return;
+        buttonCooldown = true;
+
+        // disable both buttons and show loading state
+        searchBtn.disabled = true;
         showPopularBtn.disabled = true;
-        showPopularBtn.textContent = "Loading...";
+        const originalSearchText = searchBtn.textContent;
+        const originalPopularText = showPopularBtn.textContent;
 
-        await loadPopular();
+        if (label === "search") searchBtn.textContent = "Searching...";
+        else showPopularBtn.textContent = "Loading...";
 
-        // small cooldown to prevent fast spam
-        setTimeout(() => {
-          popularCooldown = false;
-          showPopularBtn.disabled = false;
-          showPopularBtn.textContent = "Show Popular";
-        }, 1500); // 1.5 second cooldown
-      });
+        try {
+          await actionFn();
+        } catch (err) {
+          console.error("Button action error:", err);
+        } finally {
+          // restore both buttons
+          setTimeout(() => {
+            buttonCooldown = false;
+            searchBtn.disabled = false;
+            showPopularBtn.disabled = false;
+            searchBtn.textContent = originalSearchText;
+            showPopularBtn.textContent = originalPopularText;
+          }, 1500); // cooldown delay in ms
+        }
+      }
 
+      searchBtn.addEventListener("click", () => triggerWithCooldown(search, "search"));
+      showPopularBtn.addEventListener("click", () => triggerWithCooldown(loadPopular, "popular"));
 
       finalizeBtn.addEventListener("click", async () => {
         const name = (document.getElementById("basketName").value || "").trim() || "Untitled Basket";
