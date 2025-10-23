@@ -822,14 +822,50 @@
         renderStocks(list);
       }
 
-      async function search() {
-        const q = document.getElementById("stockSearch").value.trim();
-        if (!q) return loadPopular();
-        stocksGrid.innerHTML = `<p>Searching...</p>`;
-        const res = await fetch(`${API_BASE}/api/alpaca/search?q=${encodeURIComponent(q)}`);
-        const list = await res.json(); // [{symbol, quote}]
-        renderStocks(list);
+    async function search() {
+      const q = document.getElementById("stockSearch").value.trim();
+      if (!q || q.length < 1) {
+        stocksGrid.innerHTML = `<p>Please enter a valid ticker symbol.</p>`;
+        return;
       }
+
+      const url = `${API_BASE}/api/alpaca/search?q=${encodeURIComponent(q)}`;
+      console.log("Search URL:", url);
+
+      stocksGrid.innerHTML = `<p>Searching...</p>`;
+
+      try {
+        const res = await fetch(url);
+        if (!res.ok) {
+          console.error("Search failed: HTTP", res.status);
+          stocksGrid.innerHTML = `<p style="color:red;">Search failed (HTTP ${res.status}).</p>`;
+          return;
+        }
+
+        // Try to safely parse JSON
+        let list = [];
+        try {
+          list = await res.json();
+        } catch (jsonErr) {
+          console.error("JSON parse failed:", jsonErr);
+          stocksGrid.innerHTML = `<p style="color:red;">Error reading response data.</p>`;
+          return;
+        }
+
+        // Handle case where list isn't an array
+        if (!Array.isArray(list)) {
+          console.warn("Unexpected search result:", list);
+          stocksGrid.innerHTML = `<p style="color:orange;">No results found for "${q}".</p>`;
+          return;
+        }
+
+        // Render results normally
+        renderStocks(list);
+      } catch (err) {
+        console.error("Search error:", err);
+        stocksGrid.innerHTML = `<p style="color:red;">Search failed. Please try again later.</p>`;
+      }
+    }
 
       function renderStocks(list) {
         stocksGrid.innerHTML = "";
