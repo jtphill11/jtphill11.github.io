@@ -487,14 +487,57 @@
     const activeCharts = {};
 
     async function fetchBarsMulti(symbolsCsv, timeframe = "1Day", limit = 20) {
-      let multiplier;
+      let tf = "1Day";         // Alpaca timeframe
+      let limitOverride = limit;
+      let startDate;
+
+      const now = new Date();
+
       switch (timeframe) {
-        case "5Min": multiplier = 5 * 60 * 1000; break;
-        case "1Hour": multiplier = 60 * 60 * 1000; break;
-        case "1Day": default: multiplier = 24 * 60 * 60 * 1000; break;
+        case "5Min":
+          tf = "5Min";
+          limitOverride = 20;
+          startDate = new Date(now - 5 * 60 * 1000 * limitOverride);
+          break;
+        case "1Hour":
+          tf = "1Hour";
+          limitOverride = 20;
+          startDate = new Date(now - 60 * 60 * 1000 * limitOverride);
+          break;
+        case "7Day":
+          tf = "1Day";
+          limitOverride = 7;
+          startDate = new Date();
+          startDate.setDate(now.getDate() - 7);
+          break;
+        case "1Month":
+          tf = "1Day";
+          limitOverride = 30;
+          startDate = new Date();
+          startDate.setDate(now.getDate() - 30);
+          break;
+        case "3Month":
+          tf = "1Day";
+          limitOverride = 90;
+          startDate = new Date();
+          startDate.setDate(now.getDate() - 90);
+          break;
+        case "1Year":
+          tf = "1Day";
+          limitOverride = 252; // roughly trading days in a year
+          startDate = new Date();
+          startDate.setDate(now.getDate() - 365);
+          break;
+        default:
+          tf = "1Day";
+          limitOverride = 20;
+          startDate = new Date();
+          startDate.setDate(now.getDate() - limitOverride);
       }
-      const startParam = `&start=${new Date(Date.now() - multiplier * limit).toISOString()}`;
-      const url = `${API_BASE}/api/stocks/bars?symbols=${encodeURIComponent(symbolsCsv)}&timeframe=${timeframe}&limit=${limit}${startParam}`;
+
+      const startParam = `&start=${startDate.toISOString()}`;
+      const url = `${API_BASE}/api/stocks/bars?symbols=${encodeURIComponent(symbolsCsv)}&timeframe=${tf}&limit=${limitOverride}${startParam}`;
+      
       const r = await fetch(url);
       return await r.json();
     }
@@ -962,8 +1005,12 @@
           <input id="stockSearch" class="input-dark" placeholder="Search by ticker or name (e.g., AAPL, Microsoft)" style="width:320px;">
           <button id="searchBtn" class="button-modern">Search</button>
           <label style="opacity:0.8;margin-left:8px;">Timeframe:</label>
-          <select id="tfSelect" class="input-dark" style="width:120px;">
-            <option value="1Day" selected>1 Day</option>
+          <select id="tfSelect" class="input-dark" style="width:140px;">
+            <option value="1Day">1 Day</option>
+            <option value="7Day">7 Days</option>
+            <option value="1Month">1 Month</option>
+            <option value="3Month">3 Months</option>
+            <option value="1Year">1 Year</option>
             <option value="5Min">5 Min</option>
             <option value="1Hour">1 Hour</option>
           </select>
