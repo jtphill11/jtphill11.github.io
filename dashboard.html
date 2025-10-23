@@ -406,6 +406,8 @@
       scope: "openid email phone profile"
     });
 
+    const API_BASE = "https://bullride-backend-env.eba-afbnipvp.us-east-1.elasticbeanstalk.com";
+
     // Make available to other scripts
     window.userManager = userManager;
 
@@ -614,25 +616,58 @@
         <h1>My Creations</h1>
         <p class="lead">Baskets you've built and shared with the community.</p>
 
-        <section style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:2rem;">
-          <div style="background:rgba(255,255,255,0.05);padding:1.5rem;border-radius:12px;border:1px solid rgba(255,255,255,0.1);text-align:center;">
-            <h3>Tech Titans Basket</h3>
-            <p>+5.3% this week</p>
-            <button style="margin-top:1rem;padding:0.6rem 1rem;border:none;border-radius:6px;background:#fff;color:#000;cursor:pointer;">Edit Basket</button>
-          </div>
-
-          <div style="background:rgba(255,255,255,0.05);padding:1.5rem;border-radius:12px;border:1px solid rgba(255,255,255,0.1);text-align:center;">
-            <h3>Green Energy Growth</h3>
-            <p>+2.1% this week</p>
-            <button style="margin-top:1rem;padding:0.6rem 1rem;border:none;border-radius:6px;background:#fff;color:#000;cursor:pointer;">Edit Basket</button>
-          </div>
-
-          <div style="display:flex;align-items:center;justify-content:center;border:2px dashed rgba(255,255,255,0.3);border-radius:12px;cursor:pointer;transition:all 0.3s ease;">
-            <span style="font-size:1.2rem;opacity:0.8;">+ Create New Basket</span>
-          </div>
+        <section id="basketsGrid" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:2rem;">
+          <p>Loading baskets...</p>
         </section>
       `;
+
+      try {
+        const user = await userManager.getUser();
+        const email = user?.profile?.email;
+        const res = await fetch(`${API_BASE}/api/baskets/user?email=${encodeURIComponent(email)}`);
+        const baskets = await res.json();
+
+        const grid = document.getElementById("basketsGrid");
+        grid.innerHTML = "";
+
+        if (baskets.length === 0) {
+          grid.innerHTML = "<p style='opacity:0.8;'>You haven't created any baskets yet.</p>";
+          return;
+        }
+
+        baskets.forEach(b => {
+          const card = document.createElement("div");
+          card.style.cssText = `
+            background:rgba(255,255,255,0.05);
+            padding:1.5rem;
+            border-radius:12px;
+            border:1px solid rgba(255,255,255,0.1);
+            text-align:center;
+          `;
+          card.innerHTML = `
+            <h3>${b.name}</h3>
+            <p>${b.stocks.length} stock${b.stocks.length !== 1 ? "s" : ""}</p>
+            <button style="margin-top:1rem;padding:0.6rem 1rem;border:none;border-radius:6px;background:#fff;color:#000;cursor:pointer;">Edit Basket</button>
+          `;
+          grid.appendChild(card);
+        });
+
+        // Add "Create New Basket" button
+        const create = document.createElement("div");
+        create.style.cssText = `
+          display:flex;align-items:center;justify-content:center;
+          border:2px dashed rgba(255,255,255,0.3);
+          border-radius:12px;
+          cursor:pointer;transition:all 0.3s ease;
+        `;
+        create.innerHTML = `<span style="font-size:1.2rem;opacity:0.8;">+ Create New Basket</span>`;
+        grid.appendChild(create);
+      } catch (err) {
+        console.error("Error loading baskets:", err);
+        document.getElementById("basketsGrid").innerHTML = "<p style='color:red;'>Failed to load baskets.</p>";
+      }
     });
+
 
     // --- MY INVESTMENTS PAGE ---
     document.getElementById("investmentsBtn").addEventListener("click", async () => {
