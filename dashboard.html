@@ -422,6 +422,17 @@
       return await r.json();
     }
 
+    function clearAllMiniCharts() {
+      for (const key in activeCharts) {
+        if (key.endsWith("_interval")) {
+          clearInterval(activeCharts[key]);
+        } else if (activeCharts[key].destroy) {
+          activeCharts[key].destroy();
+        }
+        delete activeCharts[key];
+      }
+    }
+
     async function drawMiniChart(symbol, canvas, timeframe = "1Day") {
       try {
         // Fetch last N bars
