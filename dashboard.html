@@ -616,10 +616,13 @@
         <h1>My Creations</h1>
         <p class="lead">Baskets you've built and shared with the community.</p>
 
-        <section id="basketsGrid" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:2rem;">
+        <section id="basketsGrid"
+          style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:2rem;">
           <p>Loading baskets...</p>
         </section>
       `;
+
+      const grid = document.getElementById("basketsGrid");
 
       try {
         const user = await userManager.getUser();
@@ -627,44 +630,75 @@
         const res = await fetch(`${API_BASE}/api/baskets/user?email=${encodeURIComponent(email)}`);
         const baskets = await res.json();
 
-        const grid = document.getElementById("basketsGrid");
         grid.innerHTML = "";
 
-        if (baskets.length === 0) {
+        // Show user's baskets if any
+        if (baskets.length > 0) {
+          baskets.forEach(b => {
+            const card = document.createElement("div");
+            card.style.cssText = `
+              background:rgba(255,255,255,0.05);
+              padding:1.5rem;
+              border-radius:12px;
+              border:1px solid rgba(255,255,255,0.1);
+              text-align:center;
+            `;
+            card.innerHTML = `
+              <h3>${b.name}</h3>
+              <p>${b.stocks.length} stock${b.stocks.length !== 1 ? "s" : ""}</p>
+              <button style="margin-top:1rem;padding:0.6rem 1rem;border:none;
+                border-radius:6px;background:#fff;color:#000;cursor:pointer;">
+                Edit Basket
+              </button>
+            `;
+            grid.appendChild(card);
+          });
+        } else {
           grid.innerHTML = "<p style='opacity:0.8;'>You haven't created any baskets yet.</p>";
-          return;
         }
 
-        baskets.forEach(b => {
-          const card = document.createElement("div");
-          card.style.cssText = `
-            background:rgba(255,255,255,0.05);
-            padding:1.5rem;
-            border-radius:12px;
-            border:1px solid rgba(255,255,255,0.1);
-            text-align:center;
-          `;
-          card.innerHTML = `
-            <h3>${b.name}</h3>
-            <p>${b.stocks.length} stock${b.stocks.length !== 1 ? "s" : ""}</p>
-            <button style="margin-top:1rem;padding:0.6rem 1rem;border:none;border-radius:6px;background:#fff;color:#000;cursor:pointer;">Edit Basket</button>
-          `;
-          grid.appendChild(card);
-        });
-
-        // Add "Create New Basket" button
+        // Always add the “Create New Basket” button
         const create = document.createElement("div");
         create.style.cssText = `
           display:flex;align-items:center;justify-content:center;
           border:2px dashed rgba(255,255,255,0.3);
           border-radius:12px;
-          cursor:pointer;transition:all 0.3s ease;
+          cursor:pointer;transition:all 0.3s ease;height:150px;
         `;
         create.innerHTML = `<span style="font-size:1.2rem;opacity:0.8;">+ Create New Basket</span>`;
         grid.appendChild(create);
+
+        // Handle click → open a simple input prompt and create basket
+        create.addEventListener("click", async () => {
+          const name = prompt("Name your new basket:");
+          if (!name) return;
+          const stockSymbol = prompt("Add at least one stock symbol (e.g., AAPL):");
+          if (!stockSymbol) return;
+
+          const payload = {
+            userEmail: email,
+            name,
+            stocks: [{ symbol: stockSymbol, shares: 1, price: 0 }]
+          };
+
+          try {
+            const res = await fetch(`${API_BASE}/api/baskets/create`, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify(payload)
+            });
+            const data = await res.json();
+            alert("Basket created successfully!");
+            console.log("Created:", data);
+            document.getElementById("creationsBtn").click(); // reload list
+          } catch (err) {
+            console.error("Error creating basket:", err);
+            alert("Failed to create basket. Check console for details.");
+          }
+        });
       } catch (err) {
         console.error("Error loading baskets:", err);
-        document.getElementById("basketsGrid").innerHTML = "<p style='color:red;'>Failed to load baskets.</p>";
+        grid.innerHTML = "<p style='color:red;'>Failed to load baskets.</p>";
       }
     });
 
