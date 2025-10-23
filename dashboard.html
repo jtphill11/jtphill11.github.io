@@ -367,7 +367,6 @@
     }
     .button-modern:disabled {
       opacity: 0.6;
-      cursor: not-allowed;
       box-shadow: none;
     }
     /* Light Mode Adjustments */
@@ -1193,7 +1192,7 @@
             showPopularBtn.disabled = false;
             searchBtn.textContent = originalSearchText;
             showPopularBtn.textContent = originalPopularText;
-          }, 1500); // cooldown delay in ms
+          }, 2000); // cooldown delay in ms
         }
       }
 
