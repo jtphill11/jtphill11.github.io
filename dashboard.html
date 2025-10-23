@@ -211,6 +211,29 @@
       margin-bottom: 4rem;
     }
 
+    /* Force up to 4 columns max, cards keep consistent size */
+    .grid,
+    #basketsGrid,
+    #investmentsGrid,
+    #exploreGrid,
+    #stocksGrid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      max-width: 1100px; /* fits 4 cards comfortably */
+      margin: 0 auto;
+      justify-content: center;
+    }
+
+    .grid > div,
+    #basketsGrid > div,
+    #investmentsGrid > div,
+    #exploreGrid > div,
+    #stocksGrid > div {
+      max-width: 260px;
+      justify-self: center;
+    }
+
+
     .cell {
       text-align: center;
       transition: transform 0.3s ease, opacity 0.3s ease;
@@ -1014,9 +1037,6 @@
         return;
       }
 
-      const url = `${API_BASE}/api/stocks/search?q=${encodeURIComponent(q)}`;
-      console.log("Search URL:", url);
-
       // Clean up any previous charts before rendering new results
       Object.values(activeCharts).forEach(ch => ch.destroy());
       for (const key in activeCharts) delete activeCharts[key];
@@ -1024,31 +1044,29 @@
       stocksGrid.innerHTML = `<p>Searching...</p>`;
 
       try {
-        const res = await fetch(url);
+        // Pull a full list of popular stocks to fuzzy match client-side
+        const res = await fetch(`${API_BASE}/api/stocks/popular`);
         if (!res.ok) {
           console.error("Search failed: HTTP", res.status);
           stocksGrid.innerHTML = `<p style="color:red;">Search failed (HTTP ${res.status}).</p>`;
           return;
         }
 
-        // Try to safely parse JSON
-        let list = [];
-        try {
-          list = await res.json();
-        } catch (jsonErr) {
-          console.error("JSON parse failed:", jsonErr);
-          stocksGrid.innerHTML = `<p style="color:red;">Error reading response data.</p>`;
+        let list = await res.json();
+
+        // --- Fuzzy match symbols or names (case-insensitive)
+        const query = q.toLowerCase();
+        list = list.filter(item =>
+          item.symbol.toLowerCase().includes(query) ||
+          (item.name && item.name.toLowerCase().includes(query))
+        );
+
+        if (!Array.isArray(list) || list.length === 0) {
+          stocksGrid.innerHTML = `<p style="opacity:0.8;">No results found for "${q}".</p>`;
           return;
         }
 
-        // Handle case where list isn't an array
-        if (!Array.isArray(list)) {
-          console.warn("Unexpected search result:", list);
-          stocksGrid.innerHTML = `<p style="color:orange;">No results found for "${q}".</p>`;
-          return;
-        }
-
-        // Render results normally
+        // Render fuzzy-matched results
         renderStocks(list);
       } catch (err) {
         console.error("Search error:", err);
@@ -1063,70 +1081,70 @@
           return;
         }
 
-        list.forEach(item => {
-          const sym = item.symbol;
-          const bid = item?.quote?.bp ?? null;
-          const ask = item?.quote?.ap ?? null;
-          const mid = (bid && ask) ? ((bid + ask) / 2) : (bid ?? ask ?? null);
+      function createCard(item) {
+        const sym = item.symbol;
+        const bid = item?.quote?.bp ?? null;
+        const ask = item?.quote?.ap ?? null;
+        const mid = (bid && ask) ? ((bid + ask) / 2) : (bid ?? ask ?? null);
 
-          const card = document.createElement("div");
-          card.className = "stock-card";
-          card.style.cssText = `
-            background:rgba(255,255,255,0.05);
-            border:2px solid transparent;
-            border-radius:12px;
-            padding:1rem;
-            cursor:pointer;
-            transition:all .2s ease;
-          `;
+        const card = document.createElement("div");
+        card.className = "stock-card";
+        card.style.cssText = `
+          background:rgba(255,255,255,0.05);
+          border:2px solid transparent;
+          border-radius:12px;
+          padding:1rem;
+          cursor:pointer;
+          transition:all .2s ease;
+        `;
 
-          card.innerHTML = `
-            <div style="display:flex;align-items:baseline;justify-content:space-between;gap:8px;">
-              <h3 style="margin:0;">${sym}</h3>
-              <span style="opacity:.8;">${mid ? `$${mid.toFixed(2)}` : '—'}</span>
-            </div>
-            <canvas id="mini-${sym}" height="120"></canvas>
-            <div class="shares-row" style="display:none;margin-top:8px;">
-              <label style="opacity:.8;font-size:.9rem;">Shares:</label>
-              <input type="number" min="0.01" step="0.01" value="${selected[sym]?.shares ?? 1}" id="shares-${sym}"
-                style="width:100px;padding:.5rem;border-radius:8px;border:none;
-                       background:rgba(255,255,255,0.08);color:#fff;margin-left:8px;">
-            </div>
-          `;
+        card.innerHTML = `
+          <div style="display:flex;align-items:baseline;justify-content:space-between;gap:8px;">
+            <h3 style="margin:0;">${sym}</h3>
+            <span style="opacity:.8;">${mid ? `$${mid.toFixed(2)}` : '—'}</span>
+          </div>
+          <canvas id="mini-${sym}" height="120"></canvas>
+          <div class="shares-row" style="display:none;margin-top:8px;">
+            <label style="opacity:.8;font-size:.9rem;">Shares:</label>
+            <input type="number" min="0.01" step="0.01" value="${selected[sym]?.shares ?? 1}" id="shares-${sym}"
+              style="width:100px;padding:.5rem;border-radius:8px;border:none;
+                    background:rgba(255,255,255,0.08);color:#fff;margin-left:8px;">
+          </div>
+        `;
 
-          // Toggle selection
-          card.addEventListener("click", e => {
-            if (e.target && e.target.id.startsWith("shares-")) return;
-
-            if (selected[sym]) {
-              delete selected[sym];
-              card.style.borderColor = "transparent";
-              card.querySelector(".shares-row").style.display = "none";
-            } else {
-              selected[sym] = {
-                symbol: sym,
-                name: item.name || sym, // store company name
-                shares: 1,
-                price: mid || 0
-              };
-              card.style.borderColor = "#00FF7F";
-              card.querySelector(".shares-row").style.display = "block";
-            }
-            updatePreview();
-          });
-
-          // Live change for fractional shares
-          card.addEventListener("input", e => {
-            if (e.target.id === `shares-${sym}`) {
-              const v = parseFloat(e.target.value || "1");
-              if (selected[sym]) selected[sym].shares = Math.max(0.01, v);
-              updatePreview();
-            }
-          });
-
-          stocksGrid.appendChild(card);
-          drawMiniChart(sym, card.querySelector(`#mini-${sym}`), currentTimeframe);
+        card.addEventListener("click", e => {
+          if (e.target && e.target.id.startsWith("shares-")) return;
+          if (selected[sym]) {
+            delete selected[sym];
+            card.style.borderColor = "transparent";
+            card.querySelector(".shares-row").style.display = "none";
+          } else {
+            selected[sym] = {
+              symbol: sym,
+              name: item.name || sym,
+              shares: 1,
+              price: mid || 0
+            };
+            card.style.borderColor = "#00FF7F";
+            card.querySelector(".shares-row").style.display = "block";
+          }
+          updatePreview();
         });
+
+        card.addEventListener("input", e => {
+          if (e.target.id === `shares-${sym}`) {
+            const v = parseFloat(e.target.value || "1");
+            if (selected[sym]) selected[sym].shares = Math.max(0.01, v);
+            updatePreview();
+          }
+        });
+
+        stocksGrid.appendChild(card);
+        drawMiniChart(sym, card.querySelector(`#mini-${sym}`), currentTimeframe);
+      }
+
+      // Paginate all cards (16 per page)
+      renderPaginatedCards(stocksGrid, list, createCard);
 
         tfSelect.dispatchEvent(new Event("change"));
       }
@@ -1366,6 +1384,73 @@
     document.getElementById("adminBtn").addEventListener("click", () => {
       window.location.href = "https://bullride.us/bradminlc_1.html";
     });
+
+        // ----- PAGINATION HANDLER -----
+        function renderPaginatedCards(container, items, renderFn, perPage = 16) {
+          let currentPage = 1;
+          const totalPages = Math.ceil(items.length / perPage);
+
+          const paginationDiv = document.createElement("div");
+          paginationDiv.style.cssText = `
+            text-align:center;
+            margin-top:1.5rem;
+            display:flex;
+            justify-content:center;
+            align-items:center;
+            gap:1rem;
+          `;
+
+          const prevBtn = document.createElement("button");
+          const nextBtn = document.createElement("button");
+          const pageText = document.createElement("span");
+
+          prevBtn.textContent = "← Previous";
+          nextBtn.textContent = "Next →";
+          pageText.style.opacity = "0.7";
+
+          [prevBtn, nextBtn].forEach(btn => {
+            btn.className = "button-modern";
+            btn.style.padding = "0.5rem 1rem";
+          });
+
+          function updatePage() {
+            const start = (currentPage - 1) * perPage;
+            const end = start + perPage;
+            const pageItems = items.slice(start, end);
+
+            container.style.opacity = "0";
+            setTimeout(() => {
+              container.innerHTML = "";
+              pageItems.forEach(renderFn);
+              container.style.opacity = "1";
+            }, 200);
+
+            pageText.textContent = `Page ${currentPage} of ${totalPages}`;
+            prevBtn.disabled = currentPage === 1;
+            nextBtn.disabled = currentPage === totalPages;
+          }
+
+          prevBtn.addEventListener("click", () => {
+            if (currentPage > 1) {
+              currentPage--;
+              updatePage();
+            }
+          });
+
+          nextBtn.addEventListener("click", () => {
+            if (currentPage < totalPages) {
+              currentPage++;
+              updatePage();
+            }
+          });
+
+          paginationDiv.appendChild(prevBtn);
+          paginationDiv.appendChild(pageText);
+          paginationDiv.appendChild(nextBtn);
+
+          container.insertAdjacentElement("afterend", paginationDiv);
+          updatePage();
+        }
 
   </script>
 </body>
