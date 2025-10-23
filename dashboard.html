@@ -414,14 +414,17 @@
     const activeCharts = {};
 
     async function fetchBarsMulti(symbolsCsv, timeframe = "1Day", limit = 20) {
-      const startParam = (timeframe === "1Day")
-        ? `&start=${new Date(Date.now() - 86400000 * limit).toISOString()}`
-        : "";
+      let multiplier;
+      switch (timeframe) {
+        case "5Min": multiplier = 5 * 60 * 1000; break;
+        case "1Hour": multiplier = 60 * 60 * 1000; break;
+        case "1Day": default: multiplier = 24 * 60 * 60 * 1000; break;
+      }
+      const startParam = `&start=${new Date(Date.now() - multiplier * limit).toISOString()}`;
       const url = `${API_BASE}/api/stocks/bars?symbols=${encodeURIComponent(symbolsCsv)}&timeframe=${timeframe}&limit=${limit}${startParam}`;
       const r = await fetch(url);
       return await r.json();
     }
-
 
     async function drawMiniChart(symbol, canvas, timeframe = "1Day") {
       try {
@@ -840,12 +843,20 @@
       let selected = {};
       let currentTimeframe = tfSelect.value;
 
-      async function loadPopular() {
-        stocksGrid.innerHTML = `<p>Loading popular stocks...</p>`;
-        const res = await fetch(`${API_BASE}/api/stocks/popular`);
-        const list = await res.json(); // [{symbol, quote}]
-        renderStocks(list);
-      }
+    async function loadPopular() {
+      // Clean up old charts before replacing DOM
+      Object.values(activeCharts).forEach(ch => ch.destroy());
+      for (const key in activeCharts) delete activeCharts[key];
+
+      stocksGrid.innerHTML = `<p>Loading popular stocks...</p>`;
+
+      const res = await fetch(`${API_BASE}/api/stocks/popular`);
+      const list = await res.json(); // [{symbol, quote}]
+      renderStocks(list);
+
+      tfSelect.dispatchEvent(new Event("change"));
+    }
+
 
     async function search() {
       const q = document.getElementById("stockSearch").value.trim();
@@ -857,7 +868,12 @@
       const url = `${API_BASE}/api/stocks/search?q=${encodeURIComponent(q)}`;
       console.log("Search URL:", url);
 
+      // Clean up any previous charts before rendering new results
+      Object.values(activeCharts).forEach(ch => ch.destroy());
+      for (const key in activeCharts) delete activeCharts[key];
+
       stocksGrid.innerHTML = `<p>Searching...</p>`;
+
 
       try {
         const res = await fetch(url);
@@ -958,6 +974,8 @@
             }
           });
         });
+        
+        tfSelect.dispatchEvent(new Event("change"));
       }
 
       function updatePreview() {
