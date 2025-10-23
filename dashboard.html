@@ -863,19 +863,39 @@
       let selected = {};
       let currentTimeframe = tfSelect.value;
 
-    async function loadPopular() {
-      // Clean up old charts before replacing DOM
-      Object.values(activeCharts).forEach(ch => ch.destroy());
-      for (const key in activeCharts) delete activeCharts[key];
+      let isLoadingPopular = false;
+      let currentPopularRequestId = 0;
 
-      stocksGrid.innerHTML = `<p>Loading popular stocks...</p>`;
+      async function loadPopular() {
+        if (isLoadingPopular) return; // prevent double-clicks
+        isLoadingPopular = true;
+        const requestId = ++currentPopularRequestId;
 
-      const res = await fetch(`${API_BASE}/api/stocks/popular`);
-      const list = await res.json(); // [{symbol, quote}]
-      renderStocks(list);
+        // Clean up old charts before replacing DOM
+        Object.values(activeCharts).forEach(ch => ch.destroy());
+        for (const key in activeCharts) delete activeCharts[key];
 
-      tfSelect.dispatchEvent(new Event("change"));
-    }
+        stocksGrid.innerHTML = `<p>Loading popular stocks...</p>`;
+
+        try {
+          const res = await fetch(`${API_BASE}/api/stocks/popular`);
+          const list = await res.json();
+
+          // if another request has started since this one began, ignore this response
+          if (requestId !== currentPopularRequestId) return;
+
+          renderStocks(list);
+          tfSelect.dispatchEvent(new Event("change"));
+        } catch (err) {
+          console.error("Error loading popular stocks:", err);
+          if (requestId === currentPopularRequestId)
+            stocksGrid.innerHTML = `<p style="color:red;">Failed to load popular stocks.</p>`;
+        } finally {
+          if (requestId === currentPopularRequestId)
+            isLoadingPopular = false;
+        }
+      }
+
 
 
     async function search() {
