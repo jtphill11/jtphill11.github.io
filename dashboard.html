@@ -863,39 +863,19 @@
       let selected = {};
       let currentTimeframe = tfSelect.value;
 
-      let isLoadingPopular = false;
-      let currentPopularRequestId = 0;
+    async function loadPopular() {
+      // Clean up old charts before replacing DOM
+      Object.values(activeCharts).forEach(ch => ch.destroy());
+      for (const key in activeCharts) delete activeCharts[key];
 
-      async function loadPopular() {
-        if (isLoadingPopular) return; // prevent double-clicks
-        isLoadingPopular = true;
-        const requestId = ++currentPopularRequestId;
+      stocksGrid.innerHTML = `<p>Loading popular stocks...</p>`;
 
-        // Clean up old charts before replacing DOM
-        Object.values(activeCharts).forEach(ch => ch.destroy());
-        for (const key in activeCharts) delete activeCharts[key];
+      const res = await fetch(`${API_BASE}/api/stocks/popular`);
+      const list = await res.json(); // [{symbol, quote}]
+      renderStocks(list);
 
-        stocksGrid.innerHTML = `<p>Loading popular stocks...</p>`;
-
-        try {
-          const res = await fetch(`${API_BASE}/api/stocks/popular`);
-          const list = await res.json();
-
-          // if another request has started since this one began, ignore this response
-          if (requestId !== currentPopularRequestId) return;
-
-          renderStocks(list);
-          tfSelect.dispatchEvent(new Event("change"));
-        } catch (err) {
-          console.error("Error loading popular stocks:", err);
-          if (requestId === currentPopularRequestId)
-            stocksGrid.innerHTML = `<p style="color:red;">Failed to load popular stocks.</p>`;
-        } finally {
-          if (requestId === currentPopularRequestId)
-            isLoadingPopular = false;
-        }
-      }
-
+      tfSelect.dispatchEvent(new Event("change"));
+    }
 
 
     async function search() {
@@ -1048,7 +1028,24 @@
         });
       });
       searchBtn.addEventListener("click", search);
-      showPopularBtn.addEventListener("click", loadPopular);
+      let popularCooldown = false;
+
+      showPopularBtn.addEventListener("click", async () => {
+        if (popularCooldown) return; // ignore spam clicks
+        popularCooldown = true;
+        showPopularBtn.disabled = true;
+        showPopularBtn.textContent = "Loading...";
+
+        await loadPopular();
+
+        // small cooldown to prevent fast spam
+        setTimeout(() => {
+          popularCooldown = false;
+          showPopularBtn.disabled = false;
+          showPopularBtn.textContent = "Show Popular";
+        }, 1500); // 1.5 second cooldown
+      });
+
 
       finalizeBtn.addEventListener("click", async () => {
         const name = (document.getElementById("basketName").value || "").trim() || "Untitled Basket";
