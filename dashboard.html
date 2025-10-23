@@ -422,6 +422,17 @@
       return await r.json();
     }
 
+    function clearAllMiniCharts() {
+      for (const key in activeCharts) {
+        if (key.endsWith("_interval")) {
+          clearInterval(activeCharts[key]);
+        } else if (activeCharts[key].destroy) {
+          activeCharts[key].destroy();
+        }
+        delete activeCharts[key];
+      }
+    }
+
     async function drawMiniChart(symbol, canvas, timeframe = "1Day") {
       try {
         // Fetch last N bars
@@ -907,12 +918,62 @@
       let selected = {};
       let currentTimeframe = tfSelect.value;
 
-      async function loadPopular() {
-        stocksGrid.innerHTML = `<p>Loading popular stocks...</p>`;
+    async function loadPopular() {
+      const showPopularBtn = document.getElementById("showPopularBtn");
+      if (!showPopularBtn) return;
+
+      // Disable button to prevent spam clicks
+      showPopularBtn.disabled = true;
+      showPopularBtn.textContent = "Loading...";
+
+      // Clear any existing charts first
+      clearAllMiniCharts();
+      stocksGrid.innerHTML = `<p>Loading popular stocks...</p>`;
+
+      try {
         const res = await fetch(`${API_BASE}/api/stocks/popular`);
-        const list = await res.json(); // [{symbol, quote}]
-        renderStocks(list);
+        const list = await res.json();
+
+        if (!Array.isArray(list) || list.length === 0) {
+          stocksGrid.innerHTML = `<p style="opacity:0.8;">No results.</p>`;
+          return;
+        }
+
+        stocksGrid.innerHTML = "";
+        list.forEach(item => {
+          const sym = item.symbol;
+          const bid = item?.quote?.bp ?? null;
+          const ask = item?.quote?.ap ?? null;
+          const mid = (bid && ask) ? ((bid + ask) / 2) : (bid ?? ask ?? null);
+
+          const card = document.createElement("div");
+          card.style.cssText = `
+            background:rgba(255,255,255,0.05);
+            border:1px solid rgba(255,255,255,0.1);
+            border-radius:10px;
+            padding:1rem;cursor:pointer;transition:all .2s ease;
+          `;
+          card.innerHTML = `
+            <div style="display:flex;align-items:baseline;justify-content:space-between;gap:8px;">
+              <h3 style="margin:0;">${sym}</h3>
+              <span style="opacity:.8;">${mid ? `$${mid.toFixed(2)}` : '—'}</span>
+            </div>
+            <canvas id="mini-${sym}" height="120"></canvas>
+          `;
+          stocksGrid.appendChild(card);
+
+          const canvas = card.querySelector(`#mini-${sym}`);
+          drawMiniChart(sym, canvas, currentTimeframe);
+        });
+      } catch (err) {
+        console.error("Error loading popular stocks:", err);
+        stocksGrid.innerHTML = `<p style="color:red;">Failed to load popular stocks.</p>`;
+      } finally {
+        showPopularBtn.disabled = false;
+        showPopularBtn.textContent = "Show Popular";
       }
+    }
+
 
     async function search() {
       const q = document.getElementById("stockSearch").value.trim();
