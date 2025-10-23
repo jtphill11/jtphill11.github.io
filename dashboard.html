@@ -1131,6 +1131,23 @@
         tfSelect.dispatchEvent(new Event("change"));
       }
 
+      function cleanCompanyName(name) {
+        if (!name) return "";
+        let cleaned = name
+          .replace(/\b(Common|Preferred|Ordinary|Depositary|Class [A-Z])\b/gi, "")
+          .replace(/\b(Stock|Shares?|Inc\.?|Corp\.?|Corporation|PLC|LLC)\b/gi, "")
+          .replace(/\s{2,}/g, " ") // remove extra spaces
+          .trim();
+
+        // Keep ETFs/funds recognizable
+        if (/\b(ETF|Fund|Trust)\b/i.test(name)) {
+          const match = name.match(/\b(ETF|Fund|Trust)\b/i);
+          if (match && !cleaned.includes(match[0])) cleaned += ` ${match[0]}`;
+        }
+
+        return cleaned;
+      }
+
       function updatePreview() {
         const entries = Object.values(selected);
         if (entries.length === 0) {
@@ -1145,7 +1162,7 @@
           total += est;
           return `
             <div>${s.symbol}</div>
-            <div style="opacity:.8;font-size:.85rem;">${s.name}</div>
+            <div style="opacity:.8;font-size:.85rem;">${cleanCompanyName(s.name)}</div>
             <div>${s.shares.toFixed(2)}</div>
             <div>$${est.toFixed(2)}</div>
           `;
