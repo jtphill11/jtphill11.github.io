@@ -599,7 +599,7 @@
               data: values,
               borderColor,
               fill: false,
-              tension: 0.3
+              tension: 0 // Original: 0.3
             }]
           },
           options: {
@@ -1018,14 +1018,14 @@
           <button id="searchBtn" class="button-modern">Search</button>
           <label style="opacity:0.8;margin-left:8px;">Timeframe:</label>
           <select id="tfSelect" class="input-dark" style="width:150px;">
+            <option value="5Min">5 Min</option>
+            <option value="1Hour">1 Hour</option>
             <option value="1Day" selected>1 Day</option>
             <option value="7Day">7 Days</option>
             <option value="1Month">1 Month</option>
             <option value="3Month">3 Months</option>
-            <option value="1Year">1 Year</option>
             <option value="YTD">YTD</option>
-            <option value="5Min">5 Min</option>
-            <option value="1Hour">1 Hour</option>
+            <option value="1Year">1 Year</option>
           </select>
           <button id="showPopularBtn" class="button-modern">Show Popular</button>
         </div>
