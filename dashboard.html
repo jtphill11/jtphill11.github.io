@@ -219,16 +219,16 @@
     #exploreGrid,
     #stocksGrid {
       display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      grid-auto-rows: 260px;
+      grid-template-columns: repeat(4, 260px); /* Fixed width for each card */
+      grid-auto-rows: 260px;                   /* Fixed height */
       gap: 1.6rem;
-      max-width: 1100px;
-      width: 100%;
-      justify-items: start;
+      justify-content: start;                  /* left align content */
+      align-content: start;                    /* top align grid rows */
       align-items: start;
-      justify-content: start;   /* make sure content aligns left */
-      align-content: start;     /* ensures grid begins at top, not centered vertically */
-      margin: 0 auto 3rem auto; /* center horizontally, but not vertically */
+      justify-items: start;
+      width: fit-content;                      /* ensures grid only takes up needed width */
+      margin: 0;                               /* removes auto centering */
+      padding: 0;
     }
 
     /* Make it responsive for smaller screens */
