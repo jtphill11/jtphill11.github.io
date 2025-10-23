@@ -13,10 +13,35 @@ const HEADERS = {
 const DATA  = process.env.ALPACA_DATA_URL || 'https://data.alpaca.markets/v2';
 const PAPER = 'https://paper-api.alpaca.markets/v2';
 
-// ---------------------------
+// ------------------------------------
+// Simple in-memory cache for asset names
+// ------------------------------------
+const companyCache = new Map();
+
+async function getCompanyName(symbol) {
+  const upper = symbol.toUpperCase();
+  if (companyCache.has(upper)) return companyCache.get(upper);
+
+  try {
+    const r = await fetch(`${PAPER}/assets/${upper}`, { headers: HEADERS });
+    if (!r.ok) {
+      console.warn(`Asset fetch failed for ${upper}: HTTP ${r.status}`);
+      return upper;
+    }
+    const d = await r.json();
+    const name = d.name || upper;
+    companyCache.set(upper, name);
+    return name;
+  } catch (err) {
+    console.error(`getCompanyName error for ${upper}:`, err);
+    return upper;
+  }
+}
+
+// ------------------------------------
 // Health check & debug endpoint (account info)
-// ---------------------------
-router.get('/debug', async (req, res) => {
+// ------------------------------------
+router.get('/debug', async (_req, res) => {
   try {
     const response = await fetch(`${PAPER}/account`, { headers: HEADERS });
     const data = await response.json();
@@ -27,16 +52,25 @@ router.get('/debug', async (req, res) => {
   }
 });
 
-// ---------------------------
-// Popular tickers (top 10 tech)
-// ---------------------------
+// ------------------------------------
+// Popular tickers (top 10 tech stocks)
+// ------------------------------------
 router.get('/popular', async (_req, res) => {
   const pop = ['AAPL','MSFT','GOOGL','AMZN','META','TSLA','NVDA','AMD','INTC','NFLX'];
+
   try {
     const data = await Promise.all(pop.map(async s => {
-      const r = await fetch(`${DATA}/stocks/${s}/quotes/latest`, { headers: HEADERS });
-      return r.ok ? { symbol: s, quote: (await r.json()).quote } : null;
+      // Fetch company info (Trading API) + quote (Market Data API)
+      const [name, quoteRes] = await Promise.all([
+        getCompanyName(s),
+        fetch(`${DATA}/stocks/${s}/quotes/latest`, { headers: HEADERS })
+      ]);
+
+      if (!quoteRes.ok) return null;
+      const quote = await quoteRes.json();
+      return { symbol: s, name, quote: quote.quote };
     }));
+
     res.json(data.filter(Boolean));
   } catch (err) {
     console.error('Popular error:', err);
@@ -44,50 +78,81 @@ router.get('/popular', async (_req, res) => {
   }
 });
 
-// ---------------------------
+// ------------------------------------
 // Search tickers (by symbol)
+// Example: /api/stocks/search?q=AAPL
+// ------------------------------------
+// ---------------------------
+// Search tickers or names
+// Example: /api/stocks/search?q=apple or /api/stocks/search?q=AAPL
 // ---------------------------
 router.get('/search', async (req, res) => {
-  const q = (req.query.q || '').toUpperCase();
+  const q = (req.query.q || '').trim();
   if (!q) return res.json([]);
+
   try {
-    const r = await fetch(`${DATA}/stocks/${q}/quotes/latest`, { headers: HEADERS });
-    if (!r.ok) return res.json([]);
-    const j = await r.json();
-    res.json([{ symbol: q, quote: j.quote }]);
+    const query = q.toUpperCase();
+
+    // Try direct ticker lookup first
+    const [name, quoteRes] = await Promise.all([
+      getCompanyName(query),
+      fetch(`${DATA}/stocks/${query}/quotes/latest`, { headers: HEADERS })
+    ]);
+
+    if (quoteRes.ok) {
+      const quote = await quoteRes.json();
+      return res.json([{ symbol: query, name, quote: quote.quote }]);
+    }
+
+    // Fallback: search by name (partial match) using Alpaca /assets endpoint
+    const assetsRes = await fetch(`${PAPER}/assets`, { headers: HEADERS });
+    if (!assetsRes.ok) return res.json([]);
+
+    const allAssets = await assetsRes.json();
+    const matches = allAssets.filter(a =>
+      a.name?.toLowerCase().includes(q.toLowerCase()) ||
+      a.symbol?.toLowerCase() === q.toLowerCase()
+    ).slice(0, 10); // limit to 10 results
+
+    const results = await Promise.all(matches.map(async asset => {
+      const quoteRes2 = await fetch(`${DATA}/stocks/${asset.symbol}/quotes/latest`, { headers: HEADERS });
+      if (!quoteRes2.ok) return null;
+      const quote = await quoteRes2.json();
+      return { symbol: asset.symbol, name: asset.name, quote: quote.quote };
+    }));
+
+    res.json(results.filter(Boolean));
   } catch (err) {
     console.error('Search error:', err);
     res.status(500).json({ error: 'search-failed', message: err.message });
   }
 });
 
-// ---------------------------
+// ------------------------------------
 // Historical bars (multi-symbol + timeframe)
 // Example: /api/stocks/bars?symbols=AAPL,MSFT&timeframe=1Day&limit=30
-// ---------------------------
-// routes/alpaca.js (inside router.get('/bars', ...))
+// ------------------------------------
 router.get('/bars', async (req, res) => {
   try {
     const symbolsRaw = (req.query.symbols || '').toString();
     const symbols = symbolsRaw.toUpperCase();
-    const timeframe = (req.query.timeframe || '1Day').toString(); // 1Min, 5Min, 1Hour, 1Day
+    const timeframe = (req.query.timeframe || '1Day').toString();
     const limit = Number(req.query.limit || 30);
 
     if (!symbols) return res.json({ bars: {} });
 
-    // Optional pass-throughs
+    // Optional params
     let { start, end, adjustment, feed } = req.query;
 
-    // If asking for 1Day and no start provided, compute a default start far enough back
-    // to cover `limit` trading days (add buffer for weekends/holidays).
+    // Compute a default start date for daily data if not provided
     if (timeframe === '1Day' && !start) {
-      const daysBuffer = Math.ceil(limit * 2); // simple buffer
+      const daysBuffer = Math.ceil(limit * 2); // buffer for weekends/holidays
       const d = new Date();
       d.setDate(d.getDate() - daysBuffer);
       start = d.toISOString();
     }
 
-    // Build URL with all supported params
+    // Build upstream URL
     let url = `${DATA}/stocks/bars` +
       `?symbols=${encodeURIComponent(symbols)}` +
       `&timeframe=${encodeURIComponent(timeframe)}` +
@@ -101,7 +166,11 @@ router.get('/bars', async (req, res) => {
     const response = await fetch(url, { headers: HEADERS });
     if (!response.ok) {
       const text = await response.text().catch(() => '');
-      return res.status(response.status).json({ error: 'bars-upstream', status: response.status, body: text });
+      return res.status(response.status).json({
+        error: 'bars-upstream',
+        status: response.status,
+        body: text
+      });
     }
 
     const json = await response.json();
@@ -111,6 +180,5 @@ router.get('/bars', async (req, res) => {
     res.status(500).json({ error: 'bars-failed', message: err.message });
   }
 });
-
 
 module.exports = router;
