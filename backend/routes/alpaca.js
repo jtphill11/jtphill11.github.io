@@ -65,23 +65,52 @@ router.get('/search', async (req, res) => {
 // Historical bars (multi-symbol + timeframe)
 // Example: /api/stocks/bars?symbols=AAPL,MSFT&timeframe=1Day&limit=30
 // ---------------------------
+// routes/alpaca.js (inside router.get('/bars', ...))
 router.get('/bars', async (req, res) => {
   try {
-    const symbols = (req.query.symbols || '').toUpperCase();
-    const timeframe = req.query.timeframe || '1Day';  // 1Min, 5Min, 1Hour, 1Day
-    const limit = req.query.limit || 30;               // how many bars (default 30 for charts)
+    const symbolsRaw = (req.query.symbols || '').toString();
+    const symbols = symbolsRaw.toUpperCase();
+    const timeframe = (req.query.timeframe || '1Day').toString(); // 1Min, 5Min, 1Hour, 1Day
+    const limit = Number(req.query.limit || 30);
 
     if (!symbols) return res.json({ bars: {} });
 
-    const url = `${DATA}/stocks/bars?symbols=${encodeURIComponent(symbols)}&timeframe=${timeframe}&limit=${limit}`;
-    const response = await fetch(url, { headers: HEADERS });
-    const json = await response.json();
+    // Optional pass-throughs
+    let { start, end, adjustment, feed } = req.query;
 
-    res.json(json); // { bars: { AAPL: [{t,o,h,l,c,v}, ...], MSFT: [...] } }
+    // If asking for 1Day and no start provided, compute a default start far enough back
+    // to cover `limit` trading days (add buffer for weekends/holidays).
+    if (timeframe === '1Day' && !start) {
+      const daysBuffer = Math.ceil(limit * 2); // simple buffer
+      const d = new Date();
+      d.setDate(d.getDate() - daysBuffer);
+      start = d.toISOString();
+    }
+
+    // Build URL with all supported params
+    let url = `${DATA}/stocks/bars` +
+      `?symbols=${encodeURIComponent(symbols)}` +
+      `&timeframe=${encodeURIComponent(timeframe)}` +
+      `&limit=${encodeURIComponent(limit)}`;
+
+    if (start)      url += `&start=${encodeURIComponent(start)}`;
+    if (end)        url += `&end=${encodeURIComponent(end)}`;
+    if (adjustment) url += `&adjustment=${encodeURIComponent(adjustment)}`;
+    if (feed)       url += `&feed=${encodeURIComponent(feed)}`;
+
+    const response = await fetch(url, { headers: HEADERS });
+    if (!response.ok) {
+      const text = await response.text().catch(() => '');
+      return res.status(response.status).json({ error: 'bars-upstream', status: response.status, body: text });
+    }
+
+    const json = await response.json();
+    res.json(json); // { bars: { AAPL: [...], MSFT: [...] } }
   } catch (err) {
     console.error('Bars error:', err);
     res.status(500).json({ error: 'bars-failed', message: err.message });
   }
 });
+
 
 module.exports = router;
