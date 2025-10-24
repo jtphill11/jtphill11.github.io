@@ -1327,18 +1327,17 @@
         const name = (nameInput.value || "").trim();
         const stocks = Object.values(selected);
 
-        // ---- Remove any previous notifications or highlights ----
-        document.querySelectorAll(".formErrorMsg, .toastMsg").forEach(el => el.remove());
-        nameInput.style.border = "1px solid rgba(255,255,255,0.2)";
-        document.querySelectorAll("#previewList .invalid-row").forEach(el => {
-          el.style.border = "none";
-          el.classList.remove("invalid-row");
-        });
+        // ---- Remove any previous notifications ----
+        document.querySelectorAll(".toastMsg").forEach(el => el.remove());
 
         let hasError = false;
+        let errorShown = false; // prevents multiple stacked alerts
 
-        // ---- Create top notification helper ----
-        function showToast(message) {
+        // ---- Toast helper (non-stacking) ----
+        function showToast(message, color = "rgba(255,0,0,0.9)") {
+          if (errorShown) return; // don't stack multiple
+          errorShown = true;
+
           const toast = document.createElement("div");
           toast.className = "toastMsg";
           toast.textContent = message;
@@ -1347,13 +1346,13 @@
             top: 20px;
             left: 50%;
             transform: translateX(-50%);
-            background: rgba(255,0,0,0.9);
+            background: ${color};
             color: #fff;
             padding: 0.8rem 1.4rem;
             border-radius: 8px;
             font-size: 0.95rem;
             z-index: 9999;
-            box-shadow: 0 0 10px rgba(255,0,0,0.6);
+            box-shadow: 0 0 10px ${color};
             animation: fadeToast 4s ease forwards;
           `;
           document.body.appendChild(toast);
@@ -1362,7 +1361,6 @@
 
         // ---- Validate Basket Name ----
         if (!name) {
-          nameInput.style.border = "2px solid red";
           showToast("Basket name is required.");
           hasError = true;
         }
@@ -1378,19 +1376,6 @@
         if (invalids.length > 0) {
           showToast("Each stock must total at least $1 in value.");
           hasError = true;
-
-          // Highlight the invalid preview rows in red
-          invalids.forEach(s => {
-            const rowDivs = Array.from(document.querySelectorAll("#previewList div"))
-              .filter(d => d.textContent.trim() === s.symbol);
-            rowDivs.forEach(d => {
-              const rowGroup = d.parentElement;
-              rowGroup.style.border = "2px solid red";
-              rowGroup.style.borderRadius = "6px";
-              rowGroup.style.padding = "4px";
-              rowGroup.classList.add("invalid-row");
-            });
-          });
         }
 
         if (hasError) return;
