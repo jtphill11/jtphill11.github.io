@@ -87,76 +87,91 @@
   </form>
 
   <!-- Load AWS Amplify -->
-  <script src="https://cdn.jsdelivr.net/npm/aws-amplify@5.3.6/dist/aws-amplify.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/aws-amplify@5.3.6/dist/aws-amplify.min.js" defer></script>
 
   <!-- Signup + Confirmation Logic -->
   <script>
-    const { Auth } = window.aws_amplify;
-
-    Auth.configure({
-      region: "us-east-1",
-      userPoolId: "us-east-1_HPx82G5s7",
-      userPoolWebClientId: "2l15ru0njbo72tv2skuceokjf2"
-    });
-
-    const signupForm = document.getElementById("signupForm");
-    const confirmForm = document.getElementById("confirmForm");
-    const statusEl = document.getElementById("status");
-    const confirmStatus = document.getElementById("confirmStatus");
-
-    let currentUsername = "";
-
-    // --- Helper: Convert phone input to E.164 format ---
-    function formatPhone(input) {
-      const digits = input.replace(/\D/g, "");
-      return `+1${digits}`; // change +1 if your users are outside the U.S.
-    }
-
-    // --- SIGNUP SUBMIT ---
-    signupForm.addEventListener("submit", async (e) => {
-      e.preventDefault();
-      statusEl.textContent = "Signing up...";
-
-      try {
-        const username = signupForm.username.value.trim();
-        const name = signupForm.fullname.value.trim();
-        const email = signupForm.email.value.trim();
-        const password = signupForm.password.value;
-        const phone_number = formatPhone(signupForm.phone.value);
-        const birthdate = signupForm.birthdate.value;
-
-        await Auth.signUp({
-          username,
-          password,
-          attributes: { name, email, phone_number, birthdate },
-        });
-
-        currentUsername = username;
-        signupForm.style.display = "none";
-        confirmForm.style.display = "flex";
-        confirmStatus.textContent = `We sent a code to ${email}. Check your inbox or SMS.`;
-      } catch (err) {
-        statusEl.textContent = err.message || "Error signing up.";
-        console.error(err);
+    window.addEventListener("load", () => {
+      // Ensure Amplify is available
+      if (!window.aws_amplify) {
+        alert(" Amplify failed to load. Please check your internet connection.");
+        return;
       }
-    });
 
-    // --- CONFIRM SUBMIT ---
-    confirmForm.addEventListener("submit", async (e) => {
-      e.preventDefault();
-      confirmStatus.textContent = "Confirming...";
+      const { Auth } = window.aws_amplify;
 
-      try {
-        const code = document.getElementById("code").value.trim();
-        await Auth.confirmSignUp(currentUsername, code);
-        confirmStatus.textContent = "Account confirmed! Redirecting...";
-        setTimeout(() => {
-          window.location.href = "/dashboard";
-        }, 1500);
-      } catch (err) {
-        confirmStatus.textContent = err.message || "Error confirming.";
-        console.error(err);
+      // Configure Amplify
+      Auth.configure({
+        region: "us-east-1",
+        userPoolId: "us-east-1_HPx82G5s7",
+        userPoolWebClientId: "2l15ru0njbo72tv2skuceokjf2"
+      });
+
+      // Element references
+      const signupForm = document.getElementById("signupForm");
+      const confirmForm = document.getElementById("confirmForm");
+      const statusEl = document.getElementById("status");
+      const confirmStatus = document.getElementById("confirmStatus");
+
+      let currentUsername = "";
+
+      // Format phone number to E.164
+      function formatPhone(input) {
+        const digits = input.replace(/\D/g, "");
+        return `+1${digits}`; // change +1 if not US-based
       }
+
+      // ---------- SIGN UP ----------
+      signupForm.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        statusEl.textContent = "Signing up...";
+
+        try {
+          const username = signupForm.username.value.trim();
+          const name = signupForm.fullname.value.trim();
+          const email = signupForm.email.value.trim();
+          const password = signupForm.password.value;
+          const phone_number = formatPhone(signupForm.phone.value);
+          const birthdate = signupForm.birthdate.value;
+
+          await Auth.signUp({
+            username,
+            password,
+            attributes: { name, email, phone_number, birthdate },
+          });
+
+          currentUsername = username;
+          signupForm.style.display = "none";
+          confirmForm.style.display = "flex";
+          confirmStatus.textContent = `We sent a code to ${email}. Check your inbox or SMS.`;
+        } catch (err) {
+          statusEl.textContent = err.message || "Error signing up.";
+          console.error(err);
+        }
+      });
+
+      // ---------- CONFIRM ACCOUNT ----------
+      confirmForm.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        confirmStatus.textContent = "Confirming...";
+
+        try {
+          const code = document.getElementById("code").value.trim();
+          await Auth.confirmSignUp(currentUsername, code);
+
+          // Optional: Auto sign-in after confirmation
+          const password = document.getElementById("password").value;
+          await Auth.signIn(currentUsername, password);
+
+          confirmStatus.textContent = "Account confirmed! Redirecting...";
+          setTimeout(() => {
+            window.location.href = "/dashboard";
+          }, 1500);
+        } catch (err) {
+          confirmStatus.textContent = err.message || "Error confirming.";
+          console.error(err);
+        }
+      });
     });
   </script>
 </body>
