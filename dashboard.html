@@ -1382,41 +1382,30 @@
         }
 
         // ---- Validate each stock ≥ $1 ----
-        const invalids = stocks.filter(s => (s.price * s.shares) < 1);
-        if (invalids.length > 0) {
-          showToast("Each stock must total at least $1 in value.");
-          hasError = true;
+        const previewList = document.querySelector("#previewList");
+        previewList.style.position = "relative";
 
-          // Each preview row = 4 adjacent divs; group them together visually
-          const previewDivs = Array.from(document.querySelectorAll("#previewList > div"));
-          for (let i = 4; i < previewDivs.length - 4; i += 4) {
-            const rowSy = previewDivs[i].textContent.trim();
-            if (invalids.some(s => s.symbol === rowSy)) {
+        invalids.forEach(s => {
+          const allDivs = Array.from(document.querySelectorAll("#previewList > div"));
+          for (let i = 4; i < allDivs.length - 4; i += 4) {
+            const symbolText = allDivs[i].textContent.trim();
+            if (symbolText === s.symbol) {
               const rowBox = document.createElement("div");
-              rowBox.className = "invalidRowBox fadeBorder";
-              rowBox.style.cssText = `
-                position: absolute;
-                left: 0;
-                right: 0;
-                height: 2.2em;
-                border: 2px solid red;
-                border-radius: 6px;
-                z-index: -1;
-                animation: fadeBorderOut 4s ease forwards;
-              `;
-              rowBox.style.pointerEvents = "none";
-              rowBox.style.opacity = "1"; // ensure visible
+              rowBox.className = "invalidRowBox";
+              
+              const rowRect = allDivs[i].getBoundingClientRect();
+              const parentRect = previewList.getBoundingClientRect();
+              const top = rowRect.top - parentRect.top + previewList.scrollTop;
 
-              const rowRect = previewDivs[i].getBoundingClientRect();
-              const parentRect = document.querySelector("#previewList").getBoundingClientRect();
-              rowBox.style.top = (rowRect.top - parentRect.top + document.querySelector("#previewList").scrollTop) + "px";
+              // height covers the row’s divs fully
+              rowBox.style.top = `${top}px`;
+              rowBox.style.height = `${rowRect.height}px`;
 
-              const previewList = document.querySelector("#previewList");
-              previewList.style.position = "relative";
               previewList.appendChild(rowBox);
+              break;
             }
           }
-        }
+        });
 
         if (hasError) return;
 
@@ -1442,37 +1431,43 @@
       style.textContent = `
       @keyframes fadeToast {
         0% { opacity: 0; transform: translate(-50%, -10px); }
-        10% { opacity: 1; transform: translate(-50%, 0); }
-        90% { opacity: 1; transform: translate(-50%, 0); }
+        10%,90% { opacity: 1; transform: translate(-50%, 0); }
         100% { opacity: 0; transform: translate(-50%, -10px); }
       }
 
-      /* Border fades only the color, not opacity of the element */
+      /* Red borders fade OUT completely */
       @keyframes fadeBorderOut {
-        0%   { border-color: red; }
-        80%  { border-color: red; }
-        100% { border-color: rgba(255,255,255,0.2); }
+        0%   { border-color: red; opacity: 1; }
+        70%  { border-color: red; opacity: 1; }
+        100% { border-color: transparent; opacity: 0; }
       }
 
       .fadeBorder {
-        animation: fadeBorderOut 4s ease forwards;
+        animation: fadeBorderOut 3s ease forwards;
       }
 
-      /* Make previewList positioned for absolute row boxes */
       #previewList {
         position: relative;
       }
 
-      /* Smooth fade for overlay boxes */
       .invalidRowBox {
+        position: absolute;
+        left: 0;
+        right: 0;
+        height: 2.2em;
+        border: 2px solid red;
+        border-radius: 6px;
+        opacity: 1;
+        animation: fadeBorderOut 3s ease forwards;
         pointer-events: none;
-        transition: border-color 0.5s ease;
+        z-index: 5;
       }
       `;
       if (!document.getElementById("fadeStyle")) {
         style.id = "fadeStyle";
         document.head.appendChild(style);
       }
+
 
       // init
       loadPopular();
