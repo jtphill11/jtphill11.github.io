@@ -1404,6 +1404,9 @@
                 z-index: -1;
                 animation: fadeBorderOut 4s ease forwards;
               `;
+              rowBox.style.pointerEvents = "none";
+              rowBox.style.opacity = "1"; // ensure visible
+
               const rowRect = previewDivs[i].getBoundingClientRect();
               const parentRect = document.querySelector("#previewList").getBoundingClientRect();
               rowBox.style.top = (rowRect.top - parentRect.top + document.querySelector("#previewList").scrollTop) + "px";
@@ -1444,14 +1447,26 @@
         100% { opacity: 0; transform: translate(-50%, -10px); }
       }
 
+      /* Border fades only the color, not opacity of the element */
       @keyframes fadeBorderOut {
-        0% { border-color: red; opacity: 1; }
-        90% { border-color: red; opacity: 1; }
-        100% { border-color: transparent; opacity: 0; }
+        0%   { border-color: red; }
+        80%  { border-color: red; }
+        100% { border-color: rgba(255,255,255,0.2); }
       }
 
       .fadeBorder {
         animation: fadeBorderOut 4s ease forwards;
+      }
+
+      /* Make previewList positioned for absolute row boxes */
+      #previewList {
+        position: relative;
+      }
+
+      /* Smooth fade for overlay boxes */
+      .invalidRowBox {
+        pointer-events: none;
+        transition: border-color 0.5s ease;
       }
       `;
       if (!document.getElementById("fadeStyle")) {
