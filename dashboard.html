@@ -1387,13 +1387,13 @@
           showToast("Each stock must total at least $1 in value.");
           hasError = true;
 
-          // Highlight just the price cell text that’s too low
+          // Highlight price cells under $1
           const allDivs = Array.from(document.querySelectorAll("#previewList > div"));
           for (let i = 4; i < allDivs.length - 4; i += 4) {
             const sym = allDivs[i].textContent.trim();
-            const priceCell = allDivs[i + 3]; // 4th column = price
+            const priceCell = allDivs[i + 3]; // 4th column = Est. Value
             if (invalids.some(s => s.symbol === sym)) {
-              priceCell.classList.add("priceError");
+              priceCell.classList.add("priceCircleError");
             }
           }
         }
@@ -1426,26 +1426,26 @@
         100% { opacity: 0; transform: translate(-50%, -10px); }
       }
 
-      /* Border fades only color, not opacity of the whole input */
+      /* Basket name fade border */
       @keyframes fadeBorderOut {
-        0%   { border-color: red; }
-        80%  { border-color: red; }
+        0%,70% { border-color: red; }
         100% { border-color: rgba(255,255,255,0.2); }
       }
+      .fadeBorder { animation: fadeBorderOut 3s ease forwards; }
 
-      /* Red highlight for price text */
-      @keyframes fadePriceError {
-        0%   { color: red; text-shadow: 0 0 6px red; }
-        70%  { color: red; text-shadow: 0 0 6px red; }
-        100% { color: #fff; text-shadow: none; }
+      /* Circle around price text under $1 */
+      @keyframes fadePriceCircle {
+        0%   { border-color: red; color: red; box-shadow: 0 0 6px red; }
+        70%  { border-color: red; color: red; box-shadow: 0 0 6px red; }
+        100% { border-color: transparent; color: #fff; box-shadow: none; }
       }
 
-      .fadeBorder {
-        animation: fadeBorderOut 3s ease forwards;
-      }
-
-      .priceError {
-        animation: fadePriceError 3s ease forwards;
+      .priceCircleError {
+        display: inline-block;
+        padding: 2px 6px;
+        border: 2px solid red;
+        border-radius: 8px;
+        animation: fadePriceCircle 4s ease forwards;
       }
       `;
       if (!document.getElementById("fadeStyle")) {
