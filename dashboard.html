@@ -1327,36 +1327,42 @@
         const name = (nameInput.value || "").trim();
         const stocks = Object.values(selected);
 
-        // ---- Remove any previous notifications or highlights ----
-        document.querySelectorAll(".formErrorMsg, .toastMsg").forEach(el => el.remove());
+        // ---- Clear old errors, borders, and toasts ----
+        document.querySelectorAll(".toastMsg").forEach(el => el.remove());
         nameInput.style.border = "1px solid rgba(255,255,255,0.2)";
-        document.querySelectorAll("#previewList .invalid-row").forEach(el => {
-          el.style.border = "none";
-          el.classList.remove("invalid-row");
+        document.querySelectorAll("#previewList div").forEach(cell => {
+          cell.style.border = "none";
+          cell.style.padding = "";
         });
 
         let hasError = false;
+        let toastOffset = 20;
+        const shownMessages = new Set();
 
-        // ---- Create top notification helper ----
-        function showToast(message) {
+        // ---- Toast helper (stacks without overlap) ----
+        function showToast(message, color = "rgba(255,0,0,0.9)") {
+          if (shownMessages.has(message)) return; // prevent duplicates
+          shownMessages.add(message);
+
           const toast = document.createElement("div");
           toast.className = "toastMsg";
           toast.textContent = message;
           toast.style.cssText = `
             position: fixed;
-            top: 20px;
+            top: ${toastOffset}px;
             left: 50%;
             transform: translateX(-50%);
-            background: rgba(255,0,0,0.9);
+            background: ${color};
             color: #fff;
             padding: 0.8rem 1.4rem;
             border-radius: 8px;
             font-size: 0.95rem;
             z-index: 9999;
-            box-shadow: 0 0 10px rgba(255,0,0,0.6);
+            box-shadow: 0 0 10px ${color};
             animation: fadeToast 4s ease forwards;
           `;
           document.body.appendChild(toast);
+          toastOffset += 60; // stack spacing
           setTimeout(() => toast.remove(), 4000);
         }
 
@@ -1373,29 +1379,37 @@
           hasError = true;
         }
 
-        // ---- Validate Each Stock >= $1 ----
+        // ---- Validate Each Stock ≥ $1 ----
         const invalids = stocks.filter(s => (s.price * s.shares) < 1);
         if (invalids.length > 0) {
           showToast("Each stock must total at least $1 in value.");
           hasError = true;
 
-          // Highlight the invalid preview rows in red
+          // Highlight each invalid preview row
           invalids.forEach(s => {
-            const rowDivs = Array.from(document.querySelectorAll("#previewList div"))
-              .filter(d => d.textContent.trim() === s.symbol);
-            rowDivs.forEach(d => {
-              const rowGroup = d.parentElement;
-              rowGroup.style.border = "2px solid red";
-              rowGroup.style.borderRadius = "6px";
-              rowGroup.style.padding = "4px";
-              rowGroup.classList.add("invalid-row");
-            });
+            const symbolCell = Array.from(document.querySelectorAll("#previewList div"))
+              .find(d => d.textContent.trim() === s.symbol);
+
+            if (symbolCell) {
+              // A row = 4 adjacent divs
+              const cells = [symbolCell];
+              let next = symbolCell.nextElementSibling;
+              for (let i = 0; i < 3 && next; i++) {
+                cells.push(next);
+                next = next.nextElementSibling;
+              }
+              cells.forEach(cell => {
+                cell.style.border = "2px solid red";
+                cell.style.borderRadius = "4px";
+                cell.style.padding = "4px";
+              });
+            }
           });
         }
 
         if (hasError) return;
 
-        // ---- Create Basket (if valid) ----
+        // ---- Create Basket ----
         try {
           const res = await fetch(`${API_BASE}/api/baskets/create`, {
             method: "POST",
@@ -1404,27 +1418,7 @@
           });
           if (!res.ok) throw new Error("Create failed");
 
-          // Success Toast
-          const toast = document.createElement("div");
-          toast.className = "toastMsg";
-          toast.textContent = "Basket created successfully!";
-          toast.style.cssText = `
-            position: fixed;
-            top: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: rgba(0,180,0,0.9);
-            color: #fff;
-            padding: 0.8rem 1.4rem;
-            border-radius: 8px;
-            font-size: 0.95rem;
-            z-index: 9999;
-            box-shadow: 0 0 10px rgba(0,180,0,0.6);
-            animation: fadeToast 3s ease forwards;
-          `;
-          document.body.appendChild(toast);
-          setTimeout(() => toast.remove(), 3000);
-
+          showToast("Basket created successfully!", "rgba(0,180,0,0.9)");
           setTimeout(() => document.getElementById("creationsBtn").click(), 1000);
         } catch (e) {
           console.error(e);
@@ -1432,7 +1426,7 @@
         }
       });
 
-      // ---- Toast animation keyframes ----
+      // ---- Toast animation (only needs to exist once) ----
       const style = document.createElement("style");
       style.textContent = `
       @keyframes fadeToast {
@@ -1442,7 +1436,10 @@
         100% { opacity: 0; transform: translate(-50%, -10px); }
       }
       `;
-      document.head.appendChild(style);
+      if (!document.getElementById("toastStyle")) {
+        style.id = "toastStyle";
+        document.head.appendChild(style);
+      }
 
       // init
       loadPopular();
