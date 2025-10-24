@@ -1327,21 +1327,22 @@
         const name = (nameInput.value || "").trim();
         const stocks = Object.values(selected);
 
-        // ---- Clear old errors, borders, and toasts ----
+        // ---- Clear old errors and resets ----
         document.querySelectorAll(".toastMsg").forEach(el => el.remove());
         nameInput.style.border = "1px solid rgba(255,255,255,0.2)";
-        document.querySelectorAll("#previewList div").forEach(cell => {
-          cell.style.border = "none";
-          cell.style.padding = "";
+        document.querySelectorAll(".invalidRowBox").forEach(el => el.remove());
+        document.querySelectorAll("#previewList .previewRow").forEach(r => {
+          r.style.border = "none";
+          r.classList.remove("invalid");
         });
 
         let hasError = false;
         let toastOffset = 20;
         const shownMessages = new Set();
 
-        // ---- Toast helper (stacks without overlap) ----
+        // ---- Toast helper (stacked, non-overlapping) ----
         function showToast(message, color = "rgba(255,0,0,0.9)") {
-          if (shownMessages.has(message)) return; // prevent duplicates
+          if (shownMessages.has(message)) return;
           shownMessages.add(message);
 
           const toast = document.createElement("div");
@@ -1362,54 +1363,61 @@
             animation: fadeToast 4s ease forwards;
           `;
           document.body.appendChild(toast);
-          toastOffset += 60; // stack spacing
+          toastOffset += 60;
           setTimeout(() => toast.remove(), 4000);
         }
 
-        // ---- Validate Basket Name ----
+        // ---- Validate basket name ----
         if (!name) {
           nameInput.style.border = "2px solid red";
+          nameInput.classList.add("fadeBorder");
           showToast("Basket name is required.");
           hasError = true;
         }
 
-        // ---- Validate At Least One Stock ----
+        // ---- Validate at least one stock ----
         if (stocks.length === 0) {
           showToast("Select at least one stock before finalizing.");
           hasError = true;
         }
 
-        // ---- Validate Each Stock ≥ $1 ----
+        // ---- Validate each stock ≥ $1 ----
         const invalids = stocks.filter(s => (s.price * s.shares) < 1);
         if (invalids.length > 0) {
           showToast("Each stock must total at least $1 in value.");
           hasError = true;
 
-          // Highlight each invalid preview row
-          invalids.forEach(s => {
-            const symbolCell = Array.from(document.querySelectorAll("#previewList div"))
-              .find(d => d.textContent.trim() === s.symbol);
+          // Each preview row = 4 adjacent divs; group them together visually
+          const previewDivs = Array.from(document.querySelectorAll("#previewList > div"));
+          for (let i = 4; i < previewDivs.length - 4; i += 4) {
+            const rowSy = previewDivs[i].textContent.trim();
+            if (invalids.some(s => s.symbol === rowSy)) {
+              const rowBox = document.createElement("div");
+              rowBox.className = "invalidRowBox fadeBorder";
+              rowBox.style.cssText = `
+                position: absolute;
+                left: 0;
+                right: 0;
+                height: 2.2em;
+                border: 2px solid red;
+                border-radius: 6px;
+                z-index: -1;
+                animation: fadeBorderOut 4s ease forwards;
+              `;
+              const rowRect = previewDivs[i].getBoundingClientRect();
+              const parentRect = document.querySelector("#previewList").getBoundingClientRect();
+              rowBox.style.top = (rowRect.top - parentRect.top + document.querySelector("#previewList").scrollTop) + "px";
 
-            if (symbolCell) {
-              // A row = 4 adjacent divs
-              const cells = [symbolCell];
-              let next = symbolCell.nextElementSibling;
-              for (let i = 0; i < 3 && next; i++) {
-                cells.push(next);
-                next = next.nextElementSibling;
-              }
-              cells.forEach(cell => {
-                cell.style.border = "2px solid red";
-                cell.style.borderRadius = "4px";
-                cell.style.padding = "4px";
-              });
+              const previewList = document.querySelector("#previewList");
+              previewList.style.position = "relative";
+              previewList.appendChild(rowBox);
             }
-          });
+          }
         }
 
         if (hasError) return;
 
-        // ---- Create Basket ----
+        // ---- Create basket ----
         try {
           const res = await fetch(`${API_BASE}/api/baskets/create`, {
             method: "POST",
@@ -1426,7 +1434,7 @@
         }
       });
 
-      // ---- Toast animation (only needs to exist once) ----
+      // ---- Fade animations ----
       const style = document.createElement("style");
       style.textContent = `
       @keyframes fadeToast {
@@ -1435,9 +1443,19 @@
         90% { opacity: 1; transform: translate(-50%, 0); }
         100% { opacity: 0; transform: translate(-50%, -10px); }
       }
+
+      @keyframes fadeBorderOut {
+        0% { border-color: red; opacity: 1; }
+        90% { border-color: red; opacity: 1; }
+        100% { border-color: transparent; opacity: 0; }
+      }
+
+      .fadeBorder {
+        animation: fadeBorderOut 4s ease forwards;
+      }
       `;
-      if (!document.getElementById("toastStyle")) {
-        style.id = "toastStyle";
+      if (!document.getElementById("fadeStyle")) {
+        style.id = "fadeStyle";
         document.head.appendChild(style);
       }
 
