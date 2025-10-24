@@ -1116,12 +1116,104 @@
       }
     }
 
-      function renderStocks(list) {
-        stocksGrid.innerHTML = "";
-        if (!Array.isArray(list) || list.length === 0) {
-          stocksGrid.innerHTML = `<p style="opacity:0.8;">No results.</p>`;
-          return;
+    function renderStocks(list) {
+      stocksGrid.innerHTML = "";
+      if (!Array.isArray(list) || list.length === 0) {
+        stocksGrid.innerHTML = `<p style="opacity:0.8;">No results.</p>`;
+        return;
+      }
+
+      list.forEach(item => {
+        const sym = item.symbol;
+        const bid = item?.quote?.bp ?? null;
+        const ask = item?.quote?.ap ?? null;
+        const mid = (bid && ask) ? ((bid + ask) / 2) : (bid ?? ask ?? null);
+
+        const card = document.createElement("div");
+        card.className = "stock-card";
+        card.style.cssText = `
+          background:rgba(255,255,255,0.05);
+          border:2px solid transparent;
+          border-radius:12px;
+          padding:1rem;
+          cursor:pointer;
+          transition:all .2s ease;
+        `;
+
+        card.innerHTML = `
+          <div style="display:flex;align-items:baseline;justify-content:space-between;gap:8px;">
+            <h3 style="margin:0;">${sym}</h3>
+            <span style="opacity:.8;">${mid ? `$${mid.toFixed(2)}` : '—'}</span>
+          </div>
+          <canvas id="mini-${sym}" height="120"></canvas>
+          <div class="shares-row" style="display:none;margin-top:8px;">
+            <label style="opacity:.8;font-size:.9rem;">Shares:</label>
+            <input type="number" min="0.01" step="0.01" value="${selected[sym]?.shares ?? 1}" id="shares-${sym}"
+              style="width:100px;padding:.5rem;border-radius:8px;border:none;
+                     background:rgba(255,255,255,0.08);color:#fff;margin-left:8px;">
+          </div>
+        `;
+
+        // Restore selection if stock is already selected
+        if (selected[sym]) {
+          card.style.borderColor = "#00FF7F";
+          card.querySelector(".shares-row").style.display = "block";
         }
+
+        // --- Toggle selection ---
+        card.addEventListener("click", e => {
+          if (e.target && e.target.id.startsWith("shares-")) return;
+
+          if (mid == null || mid <= 0) {
+            card.style.borderColor = "red";
+            card.animate(
+              [
+                { transform: "translateX(0)" },
+                { transform: "translateX(-5px)" },
+                { transform: "translateX(5px)" },
+                { transform: "translateX(0)" }
+              ],
+              { duration: 300 }
+            );
+            setTimeout(() => {
+              card.style.borderColor = "transparent";
+            }, 600);
+            return;
+          }
+
+          if (selected[sym]) {
+            delete selected[sym];
+            card.style.borderColor = "transparent";
+            card.querySelector(".shares-row").style.display = "none";
+          } else {
+            selected[sym] = {
+              symbol: sym,
+              name: item.name || sym,
+              shares: 1,
+              price: mid || 0
+            };
+            card.style.borderColor = "#00FF7F";
+            card.querySelector(".shares-row").style.display = "block";
+          }
+          updatePreview();
+        });
+
+        // --- Update shares live ---
+        card.addEventListener("input", e => {
+          if (e.target.id === `shares-${sym}`) {
+            const v = parseFloat(e.target.value || "1");
+            if (selected[sym]) selected[sym].shares = Math.max(0.01, v);
+            updatePreview();
+          }
+        });
+
+        stocksGrid.appendChild(card);
+        drawMiniChart(sym, card.querySelector(`#mini-${sym}`), currentTimeframe);
+      });
+
+      tfSelect.dispatchEvent(new Event("change"));
+    }
+
 
         list.forEach(item => {
           const sym = item.symbol;
