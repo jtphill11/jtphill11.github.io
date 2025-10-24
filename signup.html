@@ -86,8 +86,12 @@
     <p id="confirmStatus"></p>
   </form>
 
-  <script type="module">
-    import { Auth } from "https://cdn.jsdelivr.net/npm/aws-amplify@5.3.6/+esm";
+  <!-- Load AWS Amplify -->
+  <script src="https://cdn.jsdelivr.net/npm/aws-amplify@5.3.6/dist/aws-amplify.min.js"></script>
+
+  <!-- Signup + Confirmation Logic -->
+  <script>
+    const { Auth } = window.aws_amplify;
 
     Auth.configure({
       region: "us-east-1",
@@ -102,10 +106,10 @@
 
     let currentUsername = "";
 
-    // --- Helper to format phone to E.164 ---
+    // --- Helper: Convert phone input to E.164 format ---
     function formatPhone(input) {
       const digits = input.replace(/\D/g, "");
-      return `+1${digits}`; // change +1 if needed
+      return `+1${digits}`; // change +1 if your users are outside the U.S.
     }
 
     // --- SIGNUP SUBMIT ---
@@ -147,7 +151,7 @@
         await Auth.confirmSignUp(currentUsername, code);
         confirmStatus.textContent = "Account confirmed! Redirecting...";
         setTimeout(() => {
-          window.location.href = "/dashboard"; // redirect after success
+          window.location.href = "/dashboard";
         }, 1500);
       } catch (err) {
         confirmStatus.textContent = err.message || "Error confirming.";
