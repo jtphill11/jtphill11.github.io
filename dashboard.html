@@ -1148,13 +1148,15 @@
           <canvas id="mini-${sym}" height="120"></canvas>
           <div class="shares-row" style="display:none;margin-top:8px;">
             <label style="opacity:.8;font-size:.9rem;">Shares:</label>
-            <input type="number" min="0.01" step="0.01" value="${selected[sym]?.shares ?? 1}" id="shares-${sym}"
-              style="width:100px;padding:.5rem;border-radius:8px;border:none;
-                     background:rgba(255,255,255,0.08);color:#fff;margin-left:8px;">
+            <input type="number" min="0.01" step="0.01"
+                   value="${selected[sym]?.shares ?? 1}"
+                   id="shares-${sym}"
+                   style="width:100px;padding:.5rem;border-radius:8px;border:none;
+                          background:rgba(255,255,255,0.08);color:#fff;margin-left:8px;">
           </div>
         `;
 
-        // Restore selection if stock is already selected
+        // Restore previously selected state
         if (selected[sym]) {
           card.style.borderColor = "#00FF7F";
           card.querySelector(".shares-row").style.display = "block";
@@ -1198,7 +1200,7 @@
           updatePreview();
         });
 
-        // --- Update shares live ---
+        // --- Live update for fractional shares ---
         card.addEventListener("input", e => {
           if (e.target.id === `shares-${sym}`) {
             const v = parseFloat(e.target.value || "1");
