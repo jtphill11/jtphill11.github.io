@@ -1382,30 +1382,21 @@
         }
 
         // ---- Validate each stock ≥ $1 ----
-        const previewList = document.querySelector("#previewList");
-        previewList.style.position = "relative";
+        const invalids = stocks.filter(s => (s.price * s.shares) < 1);
+        if (invalids.length > 0) {
+          showToast("Each stock must total at least $1 in value.");
+          hasError = true;
 
-        invalids.forEach(s => {
+          // Highlight just the price cell text that’s too low
           const allDivs = Array.from(document.querySelectorAll("#previewList > div"));
           for (let i = 4; i < allDivs.length - 4; i += 4) {
-            const symbolText = allDivs[i].textContent.trim();
-            if (symbolText === s.symbol) {
-              const rowBox = document.createElement("div");
-              rowBox.className = "invalidRowBox";
-              
-              const rowRect = allDivs[i].getBoundingClientRect();
-              const parentRect = previewList.getBoundingClientRect();
-              const top = rowRect.top - parentRect.top + previewList.scrollTop;
-
-              // height covers the row’s divs fully
-              rowBox.style.top = `${top}px`;
-              rowBox.style.height = `${rowRect.height}px`;
-
-              previewList.appendChild(rowBox);
-              break;
+            const sym = allDivs[i].textContent.trim();
+            const priceCell = allDivs[i + 3]; // 4th column = price
+            if (invalids.some(s => s.symbol === sym)) {
+              priceCell.classList.add("priceError");
             }
           }
-        });
+        }
 
         if (hasError) return;
 
@@ -1435,39 +1426,32 @@
         100% { opacity: 0; transform: translate(-50%, -10px); }
       }
 
-      /* Red borders fade OUT completely */
+      /* Border fades only color, not opacity of the whole input */
       @keyframes fadeBorderOut {
-        0%   { border-color: red; opacity: 1; }
-        70%  { border-color: red; opacity: 1; }
-        100% { border-color: transparent; opacity: 0; }
+        0%   { border-color: red; }
+        80%  { border-color: red; }
+        100% { border-color: rgba(255,255,255,0.2); }
+      }
+
+      /* Red highlight for price text */
+      @keyframes fadePriceError {
+        0%   { color: red; text-shadow: 0 0 6px red; }
+        70%  { color: red; text-shadow: 0 0 6px red; }
+        100% { color: #fff; text-shadow: none; }
       }
 
       .fadeBorder {
         animation: fadeBorderOut 3s ease forwards;
       }
 
-      #previewList {
-        position: relative;
-      }
-
-      .invalidRowBox {
-        position: absolute;
-        left: 0;
-        right: 0;
-        height: 2.2em;
-        border: 2px solid red;
-        border-radius: 6px;
-        opacity: 1;
-        animation: fadeBorderOut 3s ease forwards;
-        pointer-events: none;
-        z-index: 5;
+      .priceError {
+        animation: fadePriceError 3s ease forwards;
       }
       `;
       if (!document.getElementById("fadeStyle")) {
         style.id = "fadeStyle";
         document.head.appendChild(style);
       }
-
 
       // init
       loadPopular();
