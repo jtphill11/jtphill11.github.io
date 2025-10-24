@@ -1327,62 +1327,75 @@
         const name = (nameInput.value || "").trim();
         const stocks = Object.values(selected);
 
-        // --- Remove all old error messages ---
-        document.querySelectorAll(".formErrorMsg").forEach(el => el.remove());
+        // ---- Remove any previous notifications or highlights ----
+        document.querySelectorAll(".formErrorMsg, .toastMsg").forEach(el => el.remove());
         nameInput.style.border = "1px solid rgba(255,255,255,0.2)";
-        finalizeBtn.disabled = false;
-
-        // --- Reset any red borders on stock cards ---
-        document.querySelectorAll(".stock-card").forEach(c => {
-          c.style.borderColor = selected[c.querySelector("h3")?.textContent]
-            ? "#00FF7F" : "transparent";
+        document.querySelectorAll("#previewList .invalid-row").forEach(el => {
+          el.style.border = "none";
+          el.classList.remove("invalid-row");
         });
 
         let hasError = false;
 
-        // ---------- Basket name check ----------
+        // ---- Create top notification helper ----
+        function showToast(message) {
+          const toast = document.createElement("div");
+          toast.className = "toastMsg";
+          toast.textContent = message;
+          toast.style.cssText = `
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(255,0,0,0.9);
+            color: #fff;
+            padding: 0.8rem 1.4rem;
+            border-radius: 8px;
+            font-size: 0.95rem;
+            z-index: 9999;
+            box-shadow: 0 0 10px rgba(255,0,0,0.6);
+            animation: fadeToast 4s ease forwards;
+          `;
+          document.body.appendChild(toast);
+          setTimeout(() => toast.remove(), 4000);
+        }
+
+        // ---- Validate Basket Name ----
         if (!name) {
           nameInput.style.border = "2px solid red";
-          const msg = document.createElement("p");
-          msg.className = "formErrorMsg";
-          msg.style.cssText = "color:red;margin-top:10px;font-size:0.9rem;";
-          msg.textContent = "Basket name is required.";
-          finalizeBtn.insertAdjacentElement("beforebegin", msg);
+          showToast("Basket name is required.");
           hasError = true;
         }
 
-        // ---------- Must select at least one stock ----------
+        // ---- Validate At Least One Stock ----
         if (stocks.length === 0) {
-          const msg = document.createElement("p");
-          msg.className = "formErrorMsg";
-          msg.style.cssText = "color:red;margin-top:10px;font-size:0.9rem;";
-          msg.textContent = "Select at least one stock before finalizing.";
-          finalizeBtn.insertAdjacentElement("beforebegin", msg);
+          showToast("Select at least one stock before finalizing.");
           hasError = true;
         }
 
-        // ---------- Stock ≥ $1 rule ----------
+        // ---- Validate Each Stock >= $1 ----
         const invalids = stocks.filter(s => (s.price * s.shares) < 1);
         if (invalids.length > 0) {
-          const msg = document.createElement("p");
-          msg.className = "formErrorMsg";
-          msg.style.cssText = "color:red;margin-top:10px;font-size:0.9rem;";
-          msg.textContent = "Each stock must total at least $1 in value.";
-          finalizeBtn.insertAdjacentElement("beforebegin", msg);
+          showToast("Each stock must total at least $1 in value.");
           hasError = true;
 
-          // Highlight each under-$1 stock card in red
+          // Highlight the invalid preview rows in red
           invalids.forEach(s => {
-            const card = Array.from(document.querySelectorAll(".stock-card"))
-              .find(c => c.querySelector("h3")?.textContent === s.symbol);
-            if (card) card.style.borderColor = "red";
+            const rowDivs = Array.from(document.querySelectorAll("#previewList div"))
+              .filter(d => d.textContent.trim() === s.symbol);
+            rowDivs.forEach(d => {
+              const rowGroup = d.parentElement;
+              rowGroup.style.border = "2px solid red";
+              rowGroup.style.borderRadius = "6px";
+              rowGroup.style.padding = "4px";
+              rowGroup.classList.add("invalid-row");
+            });
           });
         }
 
-        // Stop here if any validation failed
         if (hasError) return;
 
-        // ---------- Create basket ----------
+        // ---- Create Basket (if valid) ----
         try {
           const res = await fetch(`${API_BASE}/api/baskets/create`, {
             method: "POST",
@@ -1391,23 +1404,45 @@
           });
           if (!res.ok) throw new Error("Create failed");
 
-          // Success feedback
-          const msg = document.createElement("p");
-          msg.className = "formErrorMsg";
-          msg.style.cssText = "color:lightgreen;margin-top:10px;font-size:0.9rem;";
-          msg.textContent = "Basket created successfully!";
-          finalizeBtn.insertAdjacentElement("beforebegin", msg);
+          // Success Toast
+          const toast = document.createElement("div");
+          toast.className = "toastMsg";
+          toast.textContent = "Basket created successfully!";
+          toast.style.cssText = `
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0,180,0,0.9);
+            color: #fff;
+            padding: 0.8rem 1.4rem;
+            border-radius: 8px;
+            font-size: 0.95rem;
+            z-index: 9999;
+            box-shadow: 0 0 10px rgba(0,180,0,0.6);
+            animation: fadeToast 3s ease forwards;
+          `;
+          document.body.appendChild(toast);
+          setTimeout(() => toast.remove(), 3000);
 
           setTimeout(() => document.getElementById("creationsBtn").click(), 1000);
         } catch (e) {
           console.error(e);
-          const msg = document.createElement("p");
-          msg.className = "formErrorMsg";
-          msg.style.cssText = "color:red;margin-top:10px;font-size:0.9rem;";
-          msg.textContent = "Failed to create basket. Please try again.";
-          finalizeBtn.insertAdjacentElement("beforebegin", msg);
+          showToast("Failed to create basket. Please try again.");
         }
       });
+
+      // ---- Toast animation keyframes ----
+      const style = document.createElement("style");
+      style.textContent = `
+      @keyframes fadeToast {
+        0% { opacity: 0; transform: translate(-50%, -10px); }
+        10% { opacity: 1; transform: translate(-50%, 0); }
+        90% { opacity: 1; transform: translate(-50%, 0); }
+        100% { opacity: 0; transform: translate(-50%, -10px); }
+      }
+      `;
+      document.head.appendChild(style);
 
       // init
       loadPopular();
