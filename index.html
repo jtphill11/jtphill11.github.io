@@ -425,8 +425,8 @@
         signInBtn.addEventListener("click", async () => {
           await userManager.signinRedirect();
         });
-        signUpBtn.addEventListener("click", () => {
-          window.location.href = "/signup.html";
+        signUpBtn.addEventListener("click", async () => {
+          await userManager.signinRedirect({ screen_hint: "signup" });
         });
       }
     }
