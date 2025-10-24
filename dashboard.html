@@ -1327,80 +1327,75 @@
         const name = (nameInput.value || "").trim();
         const stocks = Object.values(selected);
 
-        // ---- Clear old errors and resets ----
-        document.querySelectorAll(".toastMsg").forEach(el => el.remove());
+        // ---- Remove any previous notifications or highlights ----
+        document.querySelectorAll(".formErrorMsg, .toastMsg").forEach(el => el.remove());
         nameInput.style.border = "1px solid rgba(255,255,255,0.2)";
-        document.querySelectorAll(".invalidRowBox").forEach(el => el.remove());
-        document.querySelectorAll("#previewList .previewRow").forEach(r => {
-          r.style.border = "none";
-          r.classList.remove("invalid");
+        document.querySelectorAll("#previewList .invalid-row").forEach(el => {
+          el.style.border = "none";
+          el.classList.remove("invalid-row");
         });
 
         let hasError = false;
-        let toastOffset = 20;
-        const shownMessages = new Set();
 
-        // ---- Toast helper (stacked, non-overlapping) ----
-        function showToast(message, color = "rgba(255,0,0,0.9)") {
-          if (shownMessages.has(message)) return;
-          shownMessages.add(message);
-
+        // ---- Create top notification helper ----
+        function showToast(message) {
           const toast = document.createElement("div");
           toast.className = "toastMsg";
           toast.textContent = message;
           toast.style.cssText = `
             position: fixed;
-            top: ${toastOffset}px;
+            top: 20px;
             left: 50%;
             transform: translateX(-50%);
-            background: ${color};
+            background: rgba(255,0,0,0.9);
             color: #fff;
             padding: 0.8rem 1.4rem;
             border-radius: 8px;
             font-size: 0.95rem;
             z-index: 9999;
-            box-shadow: 0 0 10px ${color};
+            box-shadow: 0 0 10px rgba(255,0,0,0.6);
             animation: fadeToast 4s ease forwards;
           `;
           document.body.appendChild(toast);
-          toastOffset += 60;
           setTimeout(() => toast.remove(), 4000);
         }
 
-        // ---- Validate basket name ----
+        // ---- Validate Basket Name ----
         if (!name) {
           nameInput.style.border = "2px solid red";
-          nameInput.classList.add("fadeBorder");
           showToast("Basket name is required.");
           hasError = true;
         }
 
-        // ---- Validate at least one stock ----
+        // ---- Validate At Least One Stock ----
         if (stocks.length === 0) {
           showToast("Select at least one stock before finalizing.");
           hasError = true;
         }
 
-        // ---- Validate each stock ≥ $1 ----
+        // ---- Validate Each Stock >= $1 ----
         const invalids = stocks.filter(s => (s.price * s.shares) < 1);
         if (invalids.length > 0) {
           showToast("Each stock must total at least $1 in value.");
           hasError = true;
 
-          // Highlight price cells under $1
-          const allDivs = Array.from(document.querySelectorAll("#previewList > div"));
-          for (let i = 4; i < allDivs.length - 4; i += 4) {
-            const sym = allDivs[i].textContent.trim();
-            const priceCell = allDivs[i + 3]; // 4th column = Est. Value
-            if (invalids.some(s => s.symbol === sym)) {
-              priceCell.classList.add("priceCircleError");
-            }
-          }
+          // Highlight the invalid preview rows in red
+          invalids.forEach(s => {
+            const rowDivs = Array.from(document.querySelectorAll("#previewList div"))
+              .filter(d => d.textContent.trim() === s.symbol);
+            rowDivs.forEach(d => {
+              const rowGroup = d.parentElement;
+              rowGroup.style.border = "2px solid red";
+              rowGroup.style.borderRadius = "6px";
+              rowGroup.style.padding = "4px";
+              rowGroup.classList.add("invalid-row");
+            });
+          });
         }
 
         if (hasError) return;
 
-        // ---- Create basket ----
+        // ---- Create Basket (if valid) ----
         try {
           const res = await fetch(`${API_BASE}/api/baskets/create`, {
             method: "POST",
@@ -1409,7 +1404,27 @@
           });
           if (!res.ok) throw new Error("Create failed");
 
-          showToast("Basket created successfully!", "rgba(0,180,0,0.9)");
+          // Success Toast
+          const toast = document.createElement("div");
+          toast.className = "toastMsg";
+          toast.textContent = "Basket created successfully!";
+          toast.style.cssText = `
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0,180,0,0.9);
+            color: #fff;
+            padding: 0.8rem 1.4rem;
+            border-radius: 8px;
+            font-size: 0.95rem;
+            z-index: 9999;
+            box-shadow: 0 0 10px rgba(0,180,0,0.6);
+            animation: fadeToast 3s ease forwards;
+          `;
+          document.body.appendChild(toast);
+          setTimeout(() => toast.remove(), 3000);
+
           setTimeout(() => document.getElementById("creationsBtn").click(), 1000);
         } catch (e) {
           console.error(e);
@@ -1417,41 +1432,17 @@
         }
       });
 
-      // ---- Fade animations ----
+      // ---- Toast animation keyframes ----
       const style = document.createElement("style");
       style.textContent = `
       @keyframes fadeToast {
         0% { opacity: 0; transform: translate(-50%, -10px); }
-        10%,90% { opacity: 1; transform: translate(-50%, 0); }
+        10% { opacity: 1; transform: translate(-50%, 0); }
+        90% { opacity: 1; transform: translate(-50%, 0); }
         100% { opacity: 0; transform: translate(-50%, -10px); }
       }
-
-      /* Basket name fade border */
-      @keyframes fadeBorderOut {
-        0%,70% { border-color: red; }
-        100% { border-color: rgba(255,255,255,0.2); }
-      }
-      .fadeBorder { animation: fadeBorderOut 3s ease forwards; }
-
-      /* Circle around price text under $1 */
-      @keyframes fadePriceCircle {
-        0%   { border-color: red; color: red; box-shadow: 0 0 6px red; }
-        70%  { border-color: red; color: red; box-shadow: 0 0 6px red; }
-        100% { border-color: transparent; color: #fff; box-shadow: none; }
-      }
-
-      .priceCircleError {
-        display: inline-block;
-        padding: 2px 6px;
-        border: 2px solid red;
-        border-radius: 8px;
-        animation: fadePriceCircle 4s ease forwards;
-      }
       `;
-      if (!document.getElementById("fadeStyle")) {
-        style.id = "fadeStyle";
-        document.head.appendChild(style);
-      }
+      document.head.appendChild(style);
 
       // init
       loadPopular();
