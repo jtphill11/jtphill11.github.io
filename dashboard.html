@@ -1323,25 +1323,61 @@
       showPopularBtn.addEventListener("click", () => triggerWithCooldown(loadPopular, "popular"));
 
       finalizeBtn.addEventListener("click", async () => {
-        const name = (document.getElementById("basketName").value || "").trim();
+        const nameInput = document.getElementById("basketName");
+        const name = (nameInput.value || "").trim();
         const stocks = Object.values(selected);
 
-        // Require a basket name
+        // Remove any old error message
+        const oldErr = document.getElementById("formErrorMsg");
+        if (oldErr) oldErr.remove();
+
+        let hasError = false;
+
+        // --- Validate basket name ---
         if (!name) {
-          alert("Please enter a basket name before finalizing.");
-          return;
+          nameInput.style.border = "2px solid red";
+          const msg = document.createElement("p");
+          msg.id = "formErrorMsg";
+          msg.style.cssText = "color:red;margin-top:10px;font-size:0.9rem;";
+          msg.textContent = "Basket name is required.";
+          finalizeBtn.insertAdjacentElement("beforebegin", msg);
+          hasError = true;
+        } else {
+          nameInput.style.border = "1px solid rgba(255,255,255,0.2)";
         }
-        // Require at least one stock
+
+        // --- Validate at least one stock selected ---
         if (stocks.length === 0) {
-          alert("Select at least one stock before finalizing.");
-          return;
+          const msg = document.createElement("p");
+          msg.id = "formErrorMsg";
+          msg.style.cssText = "color:red;margin-top:10px;font-size:0.9rem;";
+          msg.textContent = "Select at least one stock before finalizing.";
+          finalizeBtn.insertAdjacentElement("beforebegin", msg);
+          hasError = true;
         }
-        // Each stock must total at least $1 (price × shares)
+
+        // --- Validate each stock >= $1 total ---
         const invalids = stocks.filter(s => (s.price * s.shares) < 1);
         if (invalids.length > 0) {
-          alert("Each stock must have at least $1 in total value before creating the basket.");
-          return;
+          const msg = document.createElement("p");
+          msg.id = "formErrorMsg";
+          msg.style.cssText = "color:red;margin-top:10px;font-size:0.9rem;";
+          msg.textContent = "Each stock must total at least $1 in value.";
+          finalizeBtn.insertAdjacentElement("beforebegin", msg);
+          hasError = true;
+
+          // Highlight invalid stock cards
+          invalids.forEach(s => {
+            const el = document.querySelector(`.stock-card h3:contains("${s.symbol}")`);
+            if (el && el.closest(".stock-card")) {
+              el.closest(".stock-card").style.borderColor = "red";
+            }
+          });
         }
+
+        if (hasError) return;
+
+        // --- Proceed to create basket ---
         try {
           const res = await fetch(`${API_BASE}/api/baskets/create`, {
             method: "POST",
@@ -1349,13 +1385,25 @@
             body: JSON.stringify({ userEmail, name, stocks })
           });
           if (!res.ok) throw new Error("Create failed");
-          alert("Basket created!");
-          document.getElementById("creationsBtn").click(); // go back to list
+
+          // Reset styles and messages
+          nameInput.style.border = "1px solid rgba(255,255,255,0.2)";
+          const msg = document.createElement("p");
+          msg.style.cssText = "color:lightgreen;margin-top:10px;font-size:0.9rem;";
+          msg.textContent = "Basket created successfully!";
+          finalizeBtn.insertAdjacentElement("beforebegin", msg);
+
+          setTimeout(() => document.getElementById("creationsBtn").click(), 1000);
         } catch (e) {
           console.error(e);
-          alert("Failed to create basket.");
+          const msg = document.createElement("p");
+          msg.id = "formErrorMsg";
+          msg.style.cssText = "color:red;margin-top:10px;font-size:0.9rem;";
+          msg.textContent = "Failed to create basket. Please try again.";
+          finalizeBtn.insertAdjacentElement("beforebegin", msg);
         }
       });
+
 
       // init
       loadPopular();
