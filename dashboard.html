@@ -557,7 +557,7 @@
     async function drawMiniChart(symbol, canvas, timeframe = "1Day") {
       try {
         const data = await fetchBarsMulti(symbol, timeframe, 20);
-        const arr = data?.bars?.[symbol] || [];
+        const arr = (data?.bars?.[symbol] || []).slice().reverse();
         if (arr.length === 0) return;
 
         const labels = arr.map(b => (b.t || '').slice(5, 10));
